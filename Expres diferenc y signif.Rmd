@@ -167,6 +167,7 @@ EL resultado del análisis es una tabla res que para cada gen y cada comparació
 
 
 ```{r, warning=TRUE, error=FALSE}
+library(limma)
 GSE8879_res <- decideTests(fit.GSE8879, method = "separate", adjust.method = "fdr", p.value = 0.05,
     lfc = 0)
 ```
@@ -244,7 +245,9 @@ color.map <- function(GSE8879_grupos) {
 
 ```{r, warning=TRUE, error=FALSE}
 grupColors <- unlist(lapply(GSE8879_grupos, color.map))
-heatmap(exprs2cluster, col = rainbow(100), ColSideColors = grupColors, cexCol = 0.9)
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=grupColors,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
 
 ```
 
@@ -666,6 +669,11 @@ heatmap(exprs2cluster, col = rainbow(100), ColSideColors = colores, cexCol = 0.9
 ```
 
 
+```{r, warning=TRUE, error=FALSE}
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=colores,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+```
+          
 Mapa de colores basado en los genes seleccionados por estar diferencialmente expresados.
 
 
@@ -955,6 +963,12 @@ heatmap(exprs2cluster, col = rainbow(100), ColSideColors = grupColors, cexCol = 
 
 ```
 
+```{r, warning=TRUE, error=FALSE}
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=grupColors,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+
+```
 
 Mapa de colores basado en los genes seleccionados por estar diferencialmente expresados.
 
@@ -1246,6 +1260,32 @@ heatmap(exprs2cluster, col = rainbow(100), ColSideColors = cols, cexCol = 0.9)
 
 ```
 
+```{r, warning=TRUE, error=FALSE}
+
+c=c()
+for (colorconcreto in GSE14618_GPL96_grupos){
+
+    if (colorconcreto == "NR") {
+        c <- append(c,"yellow")
+    } else {
+        if (colorconcreto == "F") {
+            c <-  append(c,"red")
+        } else {
+            if (colorconcreto == "C") {
+                c <-  append(c,"blue")
+            } else {
+                c <-  append(c,"green")
+            }
+        }}}
+
+
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=cols,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+
+
+```
+
 
 Mapa de colores basado en los genes seleccionados por estar diferencialmente expresados.
 
@@ -1281,7 +1321,7 @@ load(file = 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/data
 
 load(file = 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/GSE26713topTabs_Anot.RData')
 
-load(file = 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/')
+load(file = 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/Resultado_GSE26713.rda')
 
 # load(file = 'C:/Users/laura/OneDrive/Documentos/Cris/GSE26713datos.normalizados.Rda')
 
@@ -1306,7 +1346,7 @@ datadir <- "C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datas
 setwd('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/')
 
 load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/GSE26713_rawData.Rda')
-
+require(Biobase)
 GSE26713_colores <- pData(GSE26713_rawData)$colores
 GSE26713_grupos <- as.factor(pData(GSE26713_rawData)$grupo)
 GSE26713_numSamples <- nrow(pData(GSE26713_rawData))
@@ -1973,6 +2013,7 @@ Comparaciones múltiples.
 
 
 ```{r, warning=TRUE, error=FALSE}
+library(limma)
 GSE26713_res <- decideTests(fit.GSE26713,
                                    method = "separate", adjust.method = "fdr",
                                    p.value = 0.05, lfc = 0)
@@ -2061,6 +2102,7 @@ require(hgu133plus2.db)
 
 
 ```{r, warning=TRUE, error=FALSE}
+library(hgu133plus2.db)
 probeNames <- rownames(GSE26713_res)
 probeNames.selected <- probeNames[sum.GSE26713res.rows != 0]
 exprs2cluster <- exprs(eset_GSE26713_Filtered)[probeNames.selected, ]
@@ -2101,12 +2143,47 @@ color.map <- function(GSE26713_grupos) {
 
 
 ```{r, warning=TRUE, error=FALSE}
-grupColors <- unlist(lapply(GSE26713_grupos, GSE26713_colores))
-heatmap(exprs2cluster, col = rainbow(100), ColSideColors = cols, cexCol = 0.9)
+
+GSE26713_grupos <- as.factor(pData(GSE26713_rawData)$grupo)
+c=c()
+for (colll in GSE26713_grupos) {
+  
+  if (colll == "BM") { c <- append(c, "yellow")}
+  
+  else if(colll == "HOXA") {c <- append(c, "red")}
+  
+  else if (colll == "LMO1") {c <- append(c, "aquamarine")}
+  
+  else if (colll == "LMO2") {c <- append(c, "chartreuse")}
+  
+  else if (colll == "MYB") {c <- append(c, "chocolate4")}
+  
+  else if (colll == "TAL1") {c <- append(c, "cornflowerblue")}
+  
+  else if (colll == "TAL2") {c <- append(c, "darkblue")}
+  
+  else if (colll == "TAL2/LMO1") {c <- append(c, "darkgoldenrod2")}
+  
+  else if (colll == "TLX1") {
+                c <- append(c, "darkmagenta")
+
+        } else if (colll == "TLX3") {
+            c <- append(c, "deeppink")
+            
+            } else if (colll == "unknown") {
+                c <- append(c, "gray")}
+}
+
+heatmap(exprs2cluster, col = rainbow(100), ColSideColors = c, cexCol = 0.9)
 
 ```
 
-
+```{r, warning=TRUE, error=FALSE}
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=c,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+```          
+          
 Mapa de colores basado en los genes seleccionados por estar diferencialmente expresados.
 
 
@@ -2344,6 +2421,12 @@ heatmap(exprs2cluster, col = rainbow(100), ColSideColors = GSE28703_colores, cex
 
 ```
 
+```{r, warning=TRUE, error=FALSE}
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=grupColors,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+```
+
 
 Mapa de colores basado en los genes seleccionados por estar diferencialmente expresados.
 
@@ -2553,6 +2636,14 @@ heatmap(exprs2cluster, col = rainbow(100), ColSideColors = grupColors, cexCol = 
 
 
 Mapa de colores basado en los genes seleccionados por estar diferencialmente expresados.
+
+```{r, warning=TRUE, error=FALSE}
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=grupColors,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+```
+
+
 
 
 
@@ -3423,8 +3514,12 @@ heatmap(exprs2cluster, col = rainbow(100), ColSideColors = grupColors, cexCol = 
 
 Mapa de colores basado en los genes seleccionados por estar diferencialmente expresados.
 
-
-
+```{r, warning=TRUE, error=TRUE}
+grupColors <- unlist(lapply(GSE33470_grupos, color.map))
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=grupColors,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+```
 
 
 
@@ -3988,59 +4083,59 @@ cont.matrix <- makeContrasts(CALMAF10_CALMHOX = CALM_AF10 - HOX,
                              CALMAF10_CALMTLX3 = CALM_AF10 - TLX3,
                              
                              HOX_HOXA = HOX - HOXA_of_Unknown_Mechanism,
-                             HOX_Immature = HOX - Immature,
+                             HOX_Immature = HOX - Immature, #10
                              HOX_ImmHOXA = HOX - Immature_HOXA13_t,
                              HOX_MLL = HOX - MLL_t,
                              HOX_TAL = HOX - TAL_R,
                              HOX_TLX1 = HOX - TLX1,
-                             HOX_TLX3 = HOX - TLX3,
+                             HOX_TLX3 = HOX - TLX3, #15
 
                              HOXAUnk_Imm = HOXA_of_Unknown_Mechanism - Immature,
                              HOXAUnk_HOX = HOXA_of_Unknown_Mechanism - Immature_HOXA13_t,
                              HOXAUnk_ImmHOXA = HOXA_of_Unknown_Mechanism - MLL_t,
-                             HOXAUnk_MLL = HOXA_of_Unknown_Mechanism - TAL_R,
+                             HOXAUnk_MLL = HOXA_of_Unknown_Mechanism - TAL_R,#19
                              HOXAUnk_TLX1 = HOXA_of_Unknown_Mechanism - TLX1,
                              HOXAUnk_TLX3 = HOXA_of_Unknown_Mechanism - TLX3,
 
                              Immature_ImmHOXA = Immature - Immature_HOXA13_t,
-                             Immature_MLL = Immature - MLL_t,
+                             Immature_MLL = Immature - MLL_t, #23
                              Immature_TAL = Immature - TAL_R,
                              Immature_TLX1 = Immature - TLX1,
-                             Immature_TLX3 = Immature - TLX3,
+                             Immature_TLX3 = Immature - TLX3, #26
                              
                              ImmHOXA_MLL = Immature_HOXA13_t - MLL_t,
-                             ImmHOXA_TAL = Immature_HOXA13_t - TAL_R,
+                             ImmHOXA_TAL = Immature_HOXA13_t - TAL_R,#28
                              ImmHOXA_TLX1 = Immature_HOXA13_t - TLX1,
                              ImmHOXA_TLX3 = Immature_HOXA13_t - TLX3,
                              
 
-                             MLL_TAL = MLL_t - TAL_R,
+                             MLL_TAL = MLL_t - TAL_R,#31
                              MLL_TLX1 = MLL_t - TLX1,
                              MLL_TLX3 = MLL_t - TLX3,
                              
-                             TLX = TLX1 - TLX3,
+                             TLX = TLX1 - TLX3, #34
                              
                              HOX_CALM = (HOX + HOXA_of_Unknown_Mechanism)/2 - CALM_AF10,
                              HOX_Imm = (HOX + HOXA_of_Unknown_Mechanism)/2 - Immature,
-                             HOX_ImHOXA = (HOX + HOXA_of_Unknown_Mechanism)/2 - Immature_HOXA13_t,
+                             HOX_ImHOXA = (HOX + HOXA_of_Unknown_Mechanism)/2 - Immature_HOXA13_t, #37
                              HOXs_MLL = (HOX + HOXA_of_Unknown_Mechanism)/2 - MLL_t,
                              HOXs_TAL = (HOX + HOXA_of_Unknown_Mechanism)/2 - TAL_R,
-                             HOXs_TLX1 = (HOX + HOXA_of_Unknown_Mechanism)/2 - TLX1,
+                             HOXs_TLX1 = (HOX + HOXA_of_Unknown_Mechanism)/2 - TLX1, #40
                              HOXs_TLX3 = (HOX + HOXA_of_Unknown_Mechanism)/2 - TLX3,
                              
-                             HOX_Imms = (HOX + HOXA_of_Unknown_Mechanism)/2 - (Immature + Immature_HOXA13_t)/2,
+                             HOX_Imms = (HOX + HOXA_of_Unknown_Mechanism)/2 - (Immature + Immature_HOXA13_t)/2, #42
                              
                              HOX_TLX = (HOX + HOXA_of_Unknown_Mechanism)/2 - (TLX1 + TLX3)/2,
                              
                              Imm_HOX =  (Immature + Immature_HOXA13_t)/2 - HOX,
-                             Imm_HOXAUnk =  (Immature + Immature_HOXA13_t)/2 - HOXA_of_Unknown_Mechanism,
+                             Imm_HOXAUnk =  (Immature + Immature_HOXA13_t)/2 - HOXA_of_Unknown_Mechanism, #45
                              Imm_CALM =  (Immature + Immature_HOXA13_t)/2 - CALM_AF10,
                              Imm_MLL =  (Immature + Immature_HOXA13_t)/2 - MLL_t,
-                             Imm_TAL =  (Immature + Immature_HOXA13_t)/2 - TAL_R,
+                             Imm_TAL =  (Immature + Immature_HOXA13_t)/2 - TAL_R, #48
                              Imm_TLX1 =  (Immature + Immature_HOXA13_t)/2 - TLX1,
                              Imm_TLX3 =  (Immature + Immature_HOXA13_t)/2 - TLX3,
                              
-                             Imm_TLX = (Immature + Immature_HOXA13_t)/2 - (TLX1 + TLX3)/2,
+                             Imm_TLX = (Immature + Immature_HOXA13_t)/2 - (TLX1 + TLX3)/2, #51
                              levels = GSE62156_design)
 print(cont.matrix)
 
@@ -4062,7 +4157,7 @@ head(rownames(fit.GSE62156))
 
 La función topTable genera para cada contraste una lista de genes ordenados de mas a menos diferencialmente expresados.
 
-
+CALMAF10_CALMHOX, CALMAF10_CALMHOXAUnk, CALMAF10_CALMImmature, CALMAF10_CALMImmatureHOXA, CALMAF10_CALMMLL, CALMAF10_CALMTAL, CALMAF10_CALMTLX1, CALMAF10_CALMTLX3, HOX_HOXA, HOX_Immature, HOX_ImmHOXA, HOX_MLL, HOX_TAL, HOX_TLX1, HOX_TLX3, HOXAUnk_Imm, HOXAUnk_HOX, HOXAUnk_ImmHOXA, HOXAUnk_MLL, HOXAUnk_TLX1, HOXAUnk_TLX3, Immature_ImmHOXA, Immature_MLL, Immature_TAL, Immature_TLX1, Immature_TLX3, ImmHOXA_MLL, ImmHOXA_TAL, ImmHOXA_TLX1, ImmHOXA_TLX3, MLL_TAL, MLL_TLX1, MLL_TLX3, TLX (34), HOX_CALM, HOX_Imm, HOX_ImHOXA, HOXs_MLL, HOXs_TAL, HOXs_TLX1, HOXs_TLX3, HOX_Imms, HOX_TLX, Imm_HOX, Imm_HOXAUnk, Imm_CALM, Imm_MLL, Imm_TAL, Imm_TLX1, Imm_TLX3, Imm_TLX
 
 ```{r, warning=TRUE, error=FALSE}
 topTab_GSE62156_1 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "CALMAF10_CALMHOX",
@@ -4082,6 +4177,10 @@ topTab_GSE62156_7 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = 
     adjust = "fdr")
 topTab_GSE62156_8 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "CALMAF10_CALMTLX3",
     adjust = "fdr")
+
+topTab_GSE62156_9REAL <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOX_HOXA",
+    adjust = "fdr")
+
 topTab_GSE62156_9 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOX_Immature",
     adjust = "fdr")
 topTab_GSE62156_10 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOX_ImmHOXA",
@@ -4095,6 +4194,8 @@ topTab_GSE62156_13 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef =
 topTab_GSE62156_14 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOX_TLX3",
                             adjust = "fdr")
 
+
+# HOX_TLX3, HOXAUnk_Imm, HOXAUnk_HOX, HOXAUnk_ImmHOXA, HOXAUnk_MLL, HOXAUnk_TLX1, HOXAUnk_TLX3, Immature_ImmHOXA, Immature_MLL, Immature_TAL, Immature_TLX1, Immature_TLX3, ImmHOXA_MLL, ImmHOXA_TAL, ImmHOXA_TLX1, ImmHOXA_TLX3, 
 
 topTab_GSE62156_15 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOXAUnk_Imm",
     adjust = "fdr")
@@ -4137,10 +4238,16 @@ topTab_GSE62156_33 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef =
 topTab_GSE62156_34 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOX_CALM",
     adjust = "fdr")
 
+# MLL_TAL, MLL_TLX1, MLL_TLX3, TLX (34), HOX_CALM, HOX_Imm (36), HOX_ImHOXA, HOXs_MLL, HOXs_TAL, HOXs_TLX1, HOXs_TLX3, HOX_Imms, HOX_TLX, Imm_HOX, Imm_HOXAUnk, Imm_CALM, Imm_MLL, Imm_TAL, Imm_TLX1, Imm_TLX3, Imm_TLX
+
 topTab_GSE62156_35 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOX_ImHOXA",
     adjust = "fdr")
 topTab_GSE62156_36 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOXs_MLL",
     adjust = "fdr")
+
+topTab_GSE62156_36REAL <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOX_Imm",
+    adjust = "fdr")
+
 topTab_GSE62156_37 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOXs_TAL",
     adjust = "fdr")
 topTab_GSE62156_38 <- topTable(fit.GSE62156, number = nrow(fit.GSE62156), coef = "HOXs_TLX1",
@@ -4197,6 +4304,7 @@ topTab_GSE62156_6_Anot<-anotaTopTab(topTab_GSE62156_6)
 topTab_GSE62156_7_Anot<-anotaTopTab(topTab_GSE62156_7)
 topTab_GSE62156_8_Anot<-anotaTopTab(topTab_GSE62156_8)
 topTab_GSE62156_9_Anot<-anotaTopTab(topTab_GSE62156_9)
+topTab_GSE62156_9REAL_Anot<-anotaTopTab(topTab_GSE62156_9REAL)
 topTab_GSE62156_10_Anot<-anotaTopTab(topTab_GSE62156_10)
 topTab_GSE62156_11_Anot<-anotaTopTab(topTab_GSE62156_11)
 topTab_GSE62156_12_Anot<-anotaTopTab(topTab_GSE62156_12)
@@ -4224,6 +4332,7 @@ topTab_GSE62156_33_Anot<-anotaTopTab(topTab_GSE62156_33)
 topTab_GSE62156_34_Anot<-anotaTopTab(topTab_GSE62156_34)
 topTab_GSE62156_35_Anot<-anotaTopTab(topTab_GSE62156_35)
 topTab_GSE62156_36_Anot<-anotaTopTab(topTab_GSE62156_36)
+topTab_GSE62156_36REAL_Anot<-anotaTopTab(topTab_GSE62156_36REAL)
 topTab_GSE62156_37_Anot<-anotaTopTab(topTab_GSE62156_37)
 topTab_GSE62156_38_Anot<-anotaTopTab(topTab_GSE62156_38)
 topTab_GSE62156_39_Anot<-anotaTopTab(topTab_GSE62156_39)
@@ -4247,7 +4356,7 @@ head(topTab_GSE62156_45_Anot)
 # save(topTab_GSE62156_1_Anot, topTab_GSE62156_2_Anot, topTab_GSE62156_3_Anot, topTab_GSE62156_4_Anot, topTab_GSE62156_5_Anot, topTab_GSE62156_6_Anot, topTab_GSE62156_7_Anot, topTab_GSE62156_8_Anot, topTab_GSE62156_9_Anot, topTab_GSE62156_10_Anot, topTab_GSE62156_11_Anot, topTab_GSE62156_12_Anot, topTab_GSE62156_13_Anot, topTab_GSE62156_14_Anot, topTab_GSE62156_15_Anot, topTab_GSE62156_16_Anot, topTab_GSE62156_17_Anot, topTab_GSE62156_18_Anot, topTab_GSE62156_19_Anot, topTab_GSE62156_20_Anot, topTab_GSE62156_21_Anot, topTab_GSE62156_22_Anot, topTab_GSE62156_23_Anot, topTab_GSE62156_24_Anot, topTab_GSE62156_25_Anot, topTab_GSE62156_26_Anot, topTab_GSE62156_27_Anot, topTab_GSE62156_28_Anot, topTab_GSE62156_29_Anot, topTab_GSE62156_30_Anot, topTab_GSE62156_31_Anot, topTab_GSE62156_32_Anot, topTab_GSE62156_33_Anot, topTab_GSE62156_34_Anot, topTab_GSE62156_35_Anot, topTab_GSE62156_36_Anot, topTab_GSE62156_37_Anot, topTab_GSE62156_38_Anot, topTab_GSE62156_39_Anot, topTab_GSE62156_40_Anot, topTab_GSE62156_41_Anot, topTab_GSE62156_42_Anot, topTab_GSE62156_43_Anot, topTab_GSE62156_44_Anot, topTab_GSE62156_45_Anot, topTab_GSE62156_46_Anot, topTab_GSE62156_47_Anot, topTab_GSE62156_48_Anot,
   # file ="C:/Users/laura/OneDrive/Documentos/Cris/GSE62156topTab_Anot.Rda")
 
-save(topTab_GSE62156_1_Anot, topTab_GSE62156_2_Anot, topTab_GSE62156_3_Anot, topTab_GSE62156_4_Anot, topTab_GSE62156_5_Anot, topTab_GSE62156_6_Anot, topTab_GSE62156_7_Anot, topTab_GSE62156_8_Anot, topTab_GSE62156_9_Anot, topTab_GSE62156_10_Anot, topTab_GSE62156_11_Anot, topTab_GSE62156_12_Anot, topTab_GSE62156_13_Anot, topTab_GSE62156_14_Anot, topTab_GSE62156_15_Anot, topTab_GSE62156_16_Anot, topTab_GSE62156_17_Anot, topTab_GSE62156_18_Anot, topTab_GSE62156_19_Anot, topTab_GSE62156_20_Anot, topTab_GSE62156_21_Anot, topTab_GSE62156_22_Anot, topTab_GSE62156_23_Anot, topTab_GSE62156_24_Anot, topTab_GSE62156_25_Anot, topTab_GSE62156_26_Anot, topTab_GSE62156_27_Anot, topTab_GSE62156_28_Anot, topTab_GSE62156_29_Anot, topTab_GSE62156_30_Anot, topTab_GSE62156_31_Anot, topTab_GSE62156_32_Anot, topTab_GSE62156_33_Anot, topTab_GSE62156_34_Anot, topTab_GSE62156_35_Anot, topTab_GSE62156_36_Anot, topTab_GSE62156_37_Anot, topTab_GSE62156_38_Anot, topTab_GSE62156_39_Anot, topTab_GSE62156_40_Anot, topTab_GSE62156_41_Anot, topTab_GSE62156_42_Anot, topTab_GSE62156_43_Anot, topTab_GSE62156_44_Anot, topTab_GSE62156_45_Anot, topTab_GSE62156_46_Anot, topTab_GSE62156_47_Anot, topTab_GSE62156_48_Anot,
+save(topTab_GSE62156_1_Anot, topTab_GSE62156_2_Anot, topTab_GSE62156_3_Anot, topTab_GSE62156_4_Anot, topTab_GSE62156_5_Anot, topTab_GSE62156_6_Anot, topTab_GSE62156_7_Anot, topTab_GSE62156_8_Anot, topTab_GSE62156_9_Anot, topTab_GSE62156_9REAL_Anot, topTab_GSE62156_10_Anot, topTab_GSE62156_11_Anot, topTab_GSE62156_12_Anot, topTab_GSE62156_13_Anot, topTab_GSE62156_14_Anot, topTab_GSE62156_15_Anot, topTab_GSE62156_16_Anot, topTab_GSE62156_17_Anot, topTab_GSE62156_18_Anot, topTab_GSE62156_19_Anot, topTab_GSE62156_20_Anot, topTab_GSE62156_21_Anot, topTab_GSE62156_22_Anot, topTab_GSE62156_23_Anot, topTab_GSE62156_24_Anot, topTab_GSE62156_25_Anot, topTab_GSE62156_26_Anot, topTab_GSE62156_27_Anot, topTab_GSE62156_28_Anot, topTab_GSE62156_29_Anot, topTab_GSE62156_30_Anot, topTab_GSE62156_31_Anot, topTab_GSE62156_32_Anot, topTab_GSE62156_33_Anot, topTab_GSE62156_34_Anot, topTab_GSE62156_35_Anot, topTab_GSE62156_36_Anot, topTab_GSE62156_36REAL_Anot, topTab_GSE62156_37_Anot, topTab_GSE62156_38_Anot, topTab_GSE62156_39_Anot, topTab_GSE62156_40_Anot, topTab_GSE62156_41_Anot, topTab_GSE62156_42_Anot, topTab_GSE62156_43_Anot, topTab_GSE62156_44_Anot, topTab_GSE62156_45_Anot, topTab_GSE62156_46_Anot, topTab_GSE62156_47_Anot, topTab_GSE62156_48_Anot,
   file ="C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE62156/GSE62156topTab_Anot.Rda")
 
 
@@ -4359,8 +4468,11 @@ heatmap(exprs2cluster, col = rainbow(100), ColSideColors = GSE62156_colores, cex
 
 Mapa de colores basado en los genes seleccionados por estar diferencialmente expresados.
 
-
-
+```{r, warning=TRUE, error=FALSE}
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=GSE62156_colores,
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+```
 
 
 
@@ -8993,6 +9105,9 @@ write.xlsx(GSE26713_LMOTAL1,
            'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/Resultado_LMOTAL1.xlsx', row.names = FALSE,
            col.names = TRUE)
 
+write.xlsx(GSE26713_LMOTAL,
+           'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/Resultado_LMOTAL.xlsx', row.names = FALSE,
+           col.names = TRUE)
 
 write.xlsx(GSE26713_LMOTAL2,
            'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/Resultado_LMOTAL2.xlsx', row.names = FALSE,
@@ -10916,7 +11031,23 @@ geneUniverse_9 <- (topTab_GSE62156_9_Anot %>%
     dplyr::select(ENTREZID) %>%
     unique)[, 1]
 
-              
+
+
+
+
+
+selGenes_9REAL <- (topTab_GSE62156_9REAL_Anot %>%
+    subset(adj.P.Val < 0.05) %>%
+    dplyr::select(ENTREZID) %>%
+    unique)[, 1]
+
+geneUniverse_9REAL <- (topTab_GSE62156_9REAL_Anot %>%
+    dplyr::select(ENTREZID) %>%
+    unique)[, 1]
+
+
+
+
    
 selGenes_10 <- (topTab_GSE62156_10_Anot %>%
     subset(adj.P.Val < 0.05) %>%
@@ -11192,6 +11323,20 @@ geneUniverse_36 <- (topTab_GSE62156_36_Anot %>%
     unique)[, 1]
 
 
+
+
+selGenes_36REAL <- (topTab_GSE62156_36REAL_Anot %>%
+    subset(adj.P.Val < 0.05) %>%
+    dplyr::select(ENTREZID) %>%
+    unique)[, 1]
+
+geneUniverse_36REAL <- (topTab_GSE62156_36REAL_Anot %>%
+    dplyr::select(ENTREZID) %>%
+    unique)[, 1]
+
+
+
+
 selGenes_37 <- (topTab_GSE62156_37_Anot %>%
     subset(adj.P.Val < 0.05) %>%
     dplyr::select(ENTREZID) %>%
@@ -11452,6 +11597,23 @@ KEGGHyper9 <- hyperGTest(KEGGparams9)
 
 
 #--
+
+
+#--
+GOparams9REAL <- new("GOHyperGParams", geneIds = selGenes_9REAL, universeGeneIds = geneUniverse_9REAL,
+    annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, conditional = FALSE,
+    testDirection = "over")
+
+KEGGparams9REAL <- new("KEGGHyperGParams", geneIds = selGenes_9REAL, universeGeneIds = geneUniverse_9REAL,
+    annotation = "hgu133plus2.db", pvalueCutoff = 0.05)
+
+# Ejecutamos los análisis
+GOHyper9REAL <- hyperGTest(GOparams9REAL)
+KEGGHyper9REAL <- hyperGTest(KEGGparams9REAL)
+
+
+#--
+
 GOparams10 <- new("GOHyperGParams", geneIds = selGenes_10, universeGeneIds = geneUniverse_10,
     annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, conditional = FALSE,
     testDirection = "over")
@@ -11799,6 +11961,24 @@ GOHyper36 <- hyperGTest(GOparams36)
 KEGGHyper36 <- hyperGTest(KEGGparams36)
 
 #--
+
+
+
+#--
+GOparams36REAL <- new("GOHyperGParams", geneIds = selGenes_36REAL, universeGeneIds = geneUniverse_36REAL,
+    annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, conditional = FALSE,
+    testDirection = "over")
+
+KEGGparams36REAL <- new("KEGGHyperGParams", geneIds = selGenes_36REAL, universeGeneIds = geneUniverse_36REAL,
+    annotation = "hgu133plus2.db", pvalueCutoff = 0.05)
+
+# Ejecutamos los análisis
+GOHyper36REAL <- hyperGTest(GOparams36REAL)
+KEGGHyper36REAL <- hyperGTest(KEGGparams36REAL)
+
+#--
+
+
 GOparams37 <- new("GOHyperGParams", geneIds = selGenes_37, universeGeneIds = geneUniverse_37,
     annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, conditional = FALSE,
     testDirection = "over")
@@ -12043,6 +12223,17 @@ enrich.result_9 <- enrichPathway(gene = selGenes_9,
                                organism = "human",
                                universe = geneUniverse_9)
 
+
+
+
+enrich.result_9REAL <- enrichPathway(gene = selGenes_9REAL,
+                               pvalueCutoff = 0.05,
+                               readable = T,
+                               organism = "human",
+                               universe = geneUniverse_9REAL)
+
+
+
 enrich.result_10 <- enrichPathway(gene = selGenes_10,
                                pvalueCutoff = 0.05,
                                readable = T,
@@ -12230,6 +12421,15 @@ enrich.result_36 <- enrichPathway(gene = selGenes_36,
                                universe = geneUniverse_36)
 
 
+
+enrich.result_36REAL <- enrichPathway(gene = selGenes_36REAL,
+                               pvalueCutoff = 0.05,
+                               readable = T,
+                               organism = "human",
+                               universe = geneUniverse_36REAL)
+
+
+
 enrich.result_37 <- enrichPathway(gene = selGenes_37,
                                pvalueCutoff = 0.05,
                                readable = T,
@@ -12335,7 +12535,8 @@ listOfTables <- list(CALMAF10_CALMHOX = topTab_GSE62156_1_Anot,
                      CALMAF10_CALMTAL= topTab_GSE62156_6_Anot,
                      CALMAF10_CALMTLX1= topTab_GSE62156_7_Anot,
                      CALMAF10_CALMTLX3= topTab_GSE62156_8_Anot,
-                     HOX_Immature= topTab_GSE62156_9_Anot, 
+                     HOX_Immature= topTab_GSE62156_9_Anot,
+                     HOX_HOXA=topTab_GSE62156_9REAL_Anot,
                      HOX_ImmHOXA= topTab_GSE62156_10_Anot, # 10
                      HOX_MLL= topTab_GSE62156_11_Anot,
                      HOX_TAL= topTab_GSE62156_12_Anot,
@@ -12363,6 +12564,7 @@ listOfTables <- list(CALMAF10_CALMHOX = topTab_GSE62156_1_Anot,
                      HOX_CALM = topTab_GSE62156_34_Anot,
                      HOX_ImHOXA = topTab_GSE62156_35_Anot,
                      HOXs_MLL = topTab_GSE62156_36_Anot,
+                     HOX_Imm=topTab_GSE62156_36REAL_Anot,
                      HOXs_TAL = topTab_GSE62156_37_Anot,
                      HOXs_TLX1 = topTab_GSE62156_38_Anot,
                      HOXs_TLX3 = topTab_GSE62156_39_Anot,
@@ -12408,6 +12610,7 @@ universes <- list(geneUniverse_1,geneUniverse_2,
                    geneUniverse_5, geneUniverse_6,
                    geneUniverse_7,
                   geneUniverse_8, geneUniverse_9,
+                  geneUniverse_9REAL,
                   geneUniverse_10, geneUniverse_11,
                   geneUniverse_12, geneUniverse_13,
                   geneUniverse_14, geneUniverse_15,
@@ -12421,7 +12624,9 @@ universes <- list(geneUniverse_1,geneUniverse_2,
                   geneUniverse_30,geneUniverse_31,
                   geneUniverse_32,geneUniverse_33,
                   geneUniverse_34,geneUniverse_35,
-                  geneUniverse_36,geneUniverse_37,
+                  geneUniverse_36,
+                  geneUniverse_36REAL,
+                  geneUniverse_37,
                   geneUniverse_38,geneUniverse_39,
                   geneUniverse_40,geneUniverse_41,
                   geneUniverse_42,geneUniverse_43,
@@ -12439,6 +12644,7 @@ enrich.results=list(enrich.result_1,enrich.result_2,
                     enrich.result_7,
                     enrich.result_8,
                     enrich.result_9,
+                    enrich.result_9REAL,
                     enrich.result_10,
                     enrich.result_11,
                     enrich.result_12,
@@ -12466,6 +12672,7 @@ enrich.results=list(enrich.result_1,enrich.result_2,
                     enrich.result_34,
                     enrich.result_35,
                     enrich.result_36,
+                    enrich.result_36REAL,
                     enrich.result_37,
                     enrich.result_38,
                     enrich.result_39,enrich.result_40,
@@ -12497,8 +12704,7 @@ for (i in 1:length(listOfData)){
 
 
 ```
-
-Seguimos quitando el 2 y el 27.
+CAMBIAR LO DE ABAJO IGUAL NO ESTA BIEN.
 
 ```{r, warning=TRUE, error=TRUE}
 
@@ -12624,8 +12830,14 @@ Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOX_Immature <-data.frame(Path, Biological_Description, Gene)
 
-
 enrich.result<-enrich.results[[10]]
+enrich.r <- enrich.result
+Path<-enrich.r@result[["ID"]]
+Biological_Description<-enrich.r@result[["Description"]]
+Gene<-enrich.r@result[["geneID"]]
+GSE62156_HOX_HOXA <-data.frame(Path, Biological_Description, Gene)
+
+enrich.result<-enrich.results[[11]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12635,7 +12847,7 @@ GSE62156_HOX_ImmHOXA <-data.frame(Path, Biological_Description, Gene)
 # CALMAF10_CALMTLX3, HOX_Immature, HOX_ImmHOXA, HOX_MLL, HOX_TAL, HOX_TLX1, HOX_TLX3, HOXAUnk_Imm, HOXAUnk_HOX, HOXAUnk_ImmHOXA, HOXAUnk_MLL, HOXAUnk_TLX1, HOXAUnk_TLX3, Immature_ImmHOXA, Immature_MLL, Immature_TAL, Immature_TLX1, Immature_TLX3, ImmHOXA_MLL, ImmHOXA_TAL, ImmHOXA_TLX1, ImmHOXA_TLX3, MLL_TAL, MLL_TLX1, MLL_TLX3, TLX, HOX_CALM, HOX_ImHOXA, HOXs_MLL, HOXs_TAL, HOXs_TLX1, HOXs_TLX3, HOX_TLX, Imm_HOX, Imm_HOXAUnk, Imm_CALM, Imm_MLL, Imm_TAL, Imm_TLX1, Imm_TLX3, Imm_TLX
 
 
-enrich.result<-enrich.results[[11]]
+enrich.result<-enrich.results[[12]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12644,14 +12856,14 @@ GSE62156_HOX_MLL <-data.frame(Path, Biological_Description, Gene)
 
 
 
-enrich.result<-enrich.results[[12]]
+enrich.result<-enrich.results[[13]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOX_TAL <-data.frame(Path, Biological_Description, Gene)
 
-enrich.result<-enrich.results[[13]]
+enrich.result<-enrich.results[[14]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12659,7 +12871,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOX_TLX1 <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[14]]
+enrich.result<-enrich.results[[15]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12667,7 +12879,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOX_TLX3 <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[15]]
+enrich.result<-enrich.results[[16]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12675,7 +12887,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOXAUnk_Imm <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[16]]
+enrich.result<-enrich.results[[17]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12684,14 +12896,14 @@ GSE62156_HOXAUnk_HOX <-data.frame(Path, Biological_Description, Gene)
 
 
 
-enrich.result<-enrich.results[[17]]
+enrich.result<-enrich.results[[18]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOXAUnk_ImmHOXA <-data.frame(Path, Biological_Description, Gene)
 
-enrich.result<-enrich.results[[18]]
+enrich.result<-enrich.results[[19]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12700,7 +12912,7 @@ GSE62156_HOXAUnk_MLL <-data.frame(Path, Biological_Description, Gene)
 
 # HOXAUnk_MLL, HOXAUnk_TLX1, HOXAUnk_TLX3, Immature_ImmHOXA, Immature_MLL, Immature_TAL, Immature_TLX1, Immature_TLX3, ImmHOXA_MLL, ImmHOXA_TAL, ImmHOXA_TLX1, ImmHOXA_TLX3, MLL_TAL, MLL_TLX1, MLL_TLX3, TLX, HOX_CALM, HOX_ImHOXA, HOXs_MLL, HOXs_TAL, HOXs_TLX1, HOXs_TLX3, HOX_TLX, Imm_HOX, Imm_HOXAUnk, Imm_CALM, Imm_MLL, Imm_TAL, Imm_TLX1, Imm_TLX3, Imm_TLX
 
-enrich.result<-enrich.results[[19]]
+enrich.result<-enrich.results[[20]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12708,7 +12920,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOXAUnk_TLX1 <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[20]]
+enrich.result<-enrich.results[[21]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12716,7 +12928,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOXAUnk_TLX3 <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[21]]
+enrich.result<-enrich.results[[22]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12725,14 +12937,14 @@ GSE62156_Immature_ImmHOXA <-data.frame(Path, Biological_Description, Gene)
 
 
 
-enrich.result<-enrich.results[[22]]
+enrich.result<-enrich.results[[23]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_Immature_MLL <-data.frame(Path, Biological_Description, Gene)
 
-enrich.result<-enrich.results[[23]]
+enrich.result<-enrich.results[[24]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12740,7 +12952,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_Immature_TAL <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[24]]
+enrich.result<-enrich.results[[25]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12748,7 +12960,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_Immature_TLX1 <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[25]]
+enrich.result<-enrich.results[[26]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12758,7 +12970,7 @@ GSE62156_Immature_TLX3 <-data.frame(Path, Biological_Description, Gene)
 
 # Immature_MLL, Immature_TAL, Immature_TLX1, Immature_TLX3, ImmHOXA_MLL, ImmHOXA_TAL, ImmHOXA_TLX1, ImmHOXA_TLX3, MLL_TAL, MLL_TLX1, MLL_TLX3, TLX, HOX_CALM, HOX_ImHOXA, HOXs_MLL, HOXs_TAL, HOXs_TLX1, HOXs_TLX3, HOX_TLX, Imm_HOX, Imm_HOXAUnk, Imm_CALM, Imm_MLL, Imm_TAL, Imm_TLX1, Imm_TLX3, Imm_TLX
 
-enrich.result<-enrich.results[[26]]
+enrich.result<-enrich.results[[27]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12767,14 +12979,14 @@ GSE62156_ImmHOXA_MLL <-data.frame(Path, Biological_Description, Gene)
 
 
 
-enrich.result<-enrich.results[[27]]
+enrich.result<-enrich.results[[28]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_ImmHOXA_TAL <-data.frame(Path, Biological_Description, Gene)
 
-enrich.result<-enrich.results[[28]]
+enrich.result<-enrich.results[[29]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12782,7 +12994,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_ImmHOXA_TLX1 <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[29]]
+enrich.result<-enrich.results[[30]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12790,7 +13002,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_ImmHOXA_TLX3 <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[30]]
+enrich.result<-enrich.results[[31]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12798,7 +13010,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_MLL_TAL <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[31]]
+enrich.result<-enrich.results[[32]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12807,14 +13019,14 @@ GSE62156_MLL_TLX1 <-data.frame(Path, Biological_Description, Gene)
 
 
 
-enrich.result<-enrich.results[[32]]
+enrich.result<-enrich.results[[33]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_MLL_TLX3 <-data.frame(Path, Biological_Description, Gene)
 
-enrich.result<-enrich.results[[33]]
+enrich.result<-enrich.results[[34]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12823,7 +13035,7 @@ GSE62156_TLX <-data.frame(Path, Biological_Description, Gene)
 
 
 
-enrich.result<-enrich.results[[34]]
+enrich.result<-enrich.results[[35]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12832,36 +13044,26 @@ GSE62156_HOX_CALM <-data.frame(Path, Biological_Description, Gene)
 
 # ImmHOXA_TLX3, MLL_TAL, MLL_TLX1, MLL_TLX3, TLX, HOX_CALM, HOX_ImHOXA, HOXs_MLL, HOXs_TAL, HOXs_TLX1, HOXs_TLX3, HOX_TLX, Imm_HOX, Imm_HOXAUnk, Imm_CALM, Imm_MLL, Imm_TAL, Imm_TLX1, Imm_TLX3, Imm_TLX
 
-enrich.result<-enrich.results[[35]]
+enrich.result<-enrich.results[[36]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOX_ImHOXA <-data.frame(Path, Biological_Description, Gene)
 
-
-enrich.result<-enrich.results[[36]]
+enrich.result<-enrich.results[[37]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOXs_MLL <-data.frame(Path, Biological_Description, Gene)
 
-
-
-enrich.result<-enrich.results[[37]]
-enrich.r <- enrich.result
-Path<-enrich.r@result[["ID"]]
-Biological_Description<-enrich.r@result[["Description"]]
-Gene<-enrich.r@result[["geneID"]]
-GSE62156_HOXs_TAL <-data.frame(Path, Biological_Description, Gene)
-
 enrich.result<-enrich.results[[38]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
-GSE62156_HOXs_TLX1 <-data.frame(Path, Biological_Description, Gene)
+GSE62156_HOX_Imm <-data.frame(Path, Biological_Description, Gene)
 
 
 enrich.result<-enrich.results[[39]]
@@ -12869,10 +13071,25 @@ enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
+GSE62156_HOXs_TAL <-data.frame(Path, Biological_Description, Gene)
+
+enrich.result<-enrich.results[[40]]
+enrich.r <- enrich.result
+Path<-enrich.r@result[["ID"]]
+Biological_Description<-enrich.r@result[["Description"]]
+Gene<-enrich.r@result[["geneID"]]
+GSE62156_HOXs_TLX1 <-data.frame(Path, Biological_Description, Gene)
+
+
+enrich.result<-enrich.results[[41]]
+enrich.r <- enrich.result
+Path<-enrich.r@result[["ID"]]
+Biological_Description<-enrich.r@result[["Description"]]
+Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOXs_TLX3 <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[40]]
+enrich.result<-enrich.results[[42]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12880,7 +13097,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_HOX_TLX <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[41]]
+enrich.result<-enrich.results[[43]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12889,14 +13106,14 @@ GSE62156_Imm_HOX <-data.frame(Path, Biological_Description, Gene)
 
 # HOXs_TAL, HOXs_TLX1, HOXs_TLX3, HOX_TLX, Imm_HOX, Imm_HOXAUnk, Imm_CALM, Imm_MLL, Imm_TAL, Imm_TLX1, Imm_TLX3, Imm_TLX
 
-enrich.result<-enrich.results[[42]]
+enrich.result<-enrich.results[[44]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_Imm_HOXAUnk <-data.frame(Path, Biological_Description, Gene)
 
-enrich.result<-enrich.results[[43]]
+enrich.result<-enrich.results[[45]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12905,7 +13122,7 @@ GSE62156_Imm_CALM <-data.frame(Path, Biological_Description, Gene)
 
 
 
-enrich.result<-enrich.results[[44]]
+enrich.result<-enrich.results[[46]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12913,7 +13130,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_Imm_MLL <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[45]]
+enrich.result<-enrich.results[[47]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12921,7 +13138,7 @@ Gene<-enrich.r@result[["geneID"]]
 GSE62156_Imm_TAL <-data.frame(Path, Biological_Description, Gene)
 
 
-enrich.result<-enrich.results[[46]]
+enrich.result<-enrich.results[[48]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12930,14 +13147,14 @@ GSE62156_Imm_TLX1 <-data.frame(Path, Biological_Description, Gene)
 
 
 
-enrich.result<-enrich.results[[47]]
+enrich.result<-enrich.results[[49]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
 Gene<-enrich.r@result[["geneID"]]
 GSE62156_Imm_TLX3 <-data.frame(Path, Biological_Description, Gene)
 
-enrich.result<-enrich.results[[48]]
+enrich.result<-enrich.results[[50]]
 enrich.r <- enrich.result
 Path<-enrich.r@result[["ID"]]
 Biological_Description<-enrich.r@result[["Description"]]
@@ -12952,7 +13169,7 @@ ls(pattern = 'GSE62156_')
 GSE62156_CALMAF10_CALMHOX, GSE62156_CALMAF10_CALMHOXAUnk, GSE62156_CALMAF10_CALMImmature, GSE62156_CALMAF10_CALMImmatureHOXA, GSE62156_CALMAF10_CALMMLL, GSE62156_CALMAF10_CALMTAL, GSE62156_CALMAF10_CALMTLX1, GSE62156_CALMAF10_CALMTLX3, GSE62156_HOX_Immature, GSE62156_HOX_ImmHOXA, GSE62156_HOX_MLL, GSE62156_HOX_TAL, GSE62156_HOX_TLX1, GSE62156_HOX_TLX3, GSE62156_HOXAUnk_Imm, GSE62156_HOXAUnk_HOX, GSE62156_HOXAUnk_ImmHOXA, GSE62156_HOXAUnk_MLL, GSE62156_HOXAUnk_TLX1, GSE62156_HOXAUnk_TLX3, GSE62156_Immature_ImmHOXA, GSE62156_Immature_MLL, GSE62156_Immature_TAL, GSE62156_Immature_TLX1, GSE62156_Immature_TLX3, GSE62156_ImmHOXA_MLL, GSE62156_ImmHOXA_TAL, GSE62156_ImmHOXA_TLX1, GSE62156_ImmHOXA_TLX3, GSE62156_MLL_TAL, GSE62156_MLL_TLX1, GSE62156_MLL_TLX3, GSE62156_TLX, GSE62156_HOX_CALM, GSE62156_HOX_ImHOXA, GSE62156_HOXs_MLL, GSE62156_HOXs_TAL, GSE62156_HOXs_TLX1, GSE62156_HOXs_TLX3, GSE62156_HOX_TLX, GSE62156_Imm_HOX, GSE62156_Imm_HOXAUnk, GSE62156_Imm_CALM, GSE62156_Imm_MLL, GSE62156_Imm_TAL, GSE62156_Imm_TLX1, GSE62156_Imm_TLX3, GSE62156_Imm_TLX
 
 
-```{r, warning=TRUE, error=FALSE}
+```{r, warning=TRUE, error=TRUE}
 
 library("xlsx")
 write.xlsx(GSE62156_CALMAF10_CALMHOX, 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE33470/Resultado_GSE62156_CALMAF10_CALMHOX.xlsx', row.names = FALSE,
@@ -12988,6 +13205,9 @@ write.xlsx(GSE62156_HOX_Immature, 'C:/Users/Copito/OneDrive/Documentos/Master bi
            col.names = TRUE)
 
 # GSE62156_CALMAF10_CALMTLX1, GSE62156_CALMAF10_CALMTLX3, GSE62156_HOX_Immature, GSE62156_HOX_ImmHOXA, GSE62156_HOX_MLL, GSE62156_HOX_TAL, GSE62156_HOX_TLX1, GSE62156_HOX_TLX3, GSE62156_HOXAUnk_Imm, GSE62156_HOXAUnk_HOX, GSE62156_HOXAUnk_ImmHOXA, GSE62156_HOXAUnk_MLL, GSE62156_HOXAUnk_TLX1, GSE62156_HOXAUnk_TLX3, GSE62156_Immature_ImmHOXA, GSE62156_Immature_MLL, GSE62156_Immature_TAL, GSE62156_Immature_TLX1, GSE62156_Immature_TLX3, GSE62156_ImmHOXA_MLL, GSE62156_ImmHOXA_TAL, GSE62156_ImmHOXA_TLX1, GSE62156_ImmHOXA_TLX3, GSE62156_MLL_TAL, GSE62156_MLL_TLX1, GSE62156_MLL_TLX3, GSE62156_TLX, GSE62156_HOX_CALM, GSE62156_HOX_ImHOXA, GSE62156_HOXs_MLL, GSE62156_HOXs_TAL, GSE62156_HOXs_TLX1, GSE62156_HOXs_TLX3, GSE62156_HOX_TLX, GSE62156_Imm_HOX, GSE62156_Imm_HOXAUnk, GSE62156_Imm_CALM, GSE62156_Imm_MLL, GSE62156_Imm_TAL, GSE62156_Imm_TLX1, GSE62156_Imm_TLX3, GSE62156_Imm_TLX
+
+write.xlsx(GSE62156_HOX_HOXA, 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE33470/Resultado_GSE62156_HOX_HOXA.xlsx', row.names = FALSE,
+           col.names = TRUE)
 
 write.xlsx(GSE62156_HOX_ImmHOXA, 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE33470/Resultado_GSE62156_HOX_ImmHOXA.xlsx', row.names = FALSE,
            col.names = TRUE)
@@ -13091,6 +13311,11 @@ write.xlsx(GSE62156_HOX_ImHOXA, 'C:/Users/Copito/OneDrive/Documentos/Master bioi
 
 write.xlsx(GSE62156_HOXs_MLL, 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE33470/Resultado_GSE62156_HOXs_MLL.xlsx', row.names = FALSE,
            col.names = TRUE)
+
+
+write.xlsx(GSE62156_HOX_Imm, 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE33470/Resultado_GSE62156_HOX_Imm.xlsx', row.names = FALSE,
+           col.names = TRUE)
+
 
 
 write.xlsx(GSE62156_HOXs_TAL, 'C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE33470/Resultado_GSE62156_HOXs_TAL.xlsx', row.names = FALSE,

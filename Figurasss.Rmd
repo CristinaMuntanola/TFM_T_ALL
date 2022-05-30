@@ -1,0 +1,2986 @@
+---
+title: "Figuras"
+author: "Cristina Muntañola"
+date: "4/5/2022"
+output: html_document
+---
+
+En este HTML se presentan diferentes gráficos, resultados de los análisis de las series GSE8879, GSE10609, GSE14618, GSE26713, GSE28703, GSE32215, GSE33469, GSE33470, GSE37389, GSE56488, GSE62156, GSE110633 y GSE110636. Aquí se comenta cómo se han creado los gráficos:
+
+-Volcano plots: se realizaron solamente para una comparación. Antes de cada volcano plot se indican los grupos a comparar.
+
+-Heatmaps.
+
+-Dotplots: se indicarán aquí. Solo se mostrará en el caso de GSE10609 cómo se ha realizado, el resto se crearán de igual forma. Se mostrarán gráficos referentes a cada comparación, solo para aquellas comparaciones que resulten en enriquecimientos significativos con enrichGO (pvalueCutoff = 0.05). El enriquecimiento se hace mediante la función enrichGO, que genera un resultado similar al que teníamos según enrichPathway, pero con esta función se pueden generar dotplots que se interpretan mejor que cualquier otro.
+
+-Diagramas de Venn: se han creado a partir de las coincidencias encontradas en el enriquecimiento funcional de las bases de datos resultado de nuestras comparaciones. Este enriquecimiento a partir de bases de datos de tres autores generó unas tablas, teniendo en cada fila un gen. Aquí se indica con este tipo de diagramas la cantidad de genes encontrada en cada comparación, y cuáles son comunes con las bases indicadas por Huang et al., 2018; Sebestyén et al., 2016 y Wang et al., 2019.
+
+
+Huang, R., Han, M., Meng, L., & Chen, X. (2018). Transcriptome-wide discovery of coding and noncoding RNA-binding proteins. Proceedings of the National Academy of Sciences, 115(17), E3879-E3887.
+
+Sebestyén, E., Singh, B., Miñana, B., Pagès, A., Mateo, F., Pujana, M. A., ... & Eyras, E. (2016). Large-scale analysis of genome and transcriptome alterations in multiple tumors unveils novel cancer-relevant splicing networks. Genome research, 26(6), 732-744.
+
+Wang, E., Lu, S. X., Pastore, A., Chen, X., Imig, J., Lee, S. C. W., ... & Aifantis, I. (2019). Targeting an RNA-binding protein network in acute myeloid leukemia. Cancer cell, 35(3), 369-384.
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+# setwd('C:/Users/laura/Downloads/')
+setwd('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/')
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+library("readxl")
+# Transcriptome1 <- read_excel("C:/Users/laura/Downloads/Transcriptome_wide_discovery_1.xlsx")
+
+Transcriptome1 <- read_excel("C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/Transcriptome_wide_discovery_1.xlsx")
+
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+library("readxl")
+
+Targeting2 <- read_excel("C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/Targeting2.xlsx")
+Targeting5 <- read_excel("C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/Targeting5.xlsx")
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+
+
+# Large_scale <- read_excel("C:/Users/laura/Downloads/Large_scale_analysis.xlsx", sheet = 3, skip = 1)
+
+Large_scale <- read_excel("C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/Large_scale_analysis.xlsx", sheet = 2, skip = 1)
+dim(Large_scale)
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+colnames(Transcriptome1)<-Transcriptome1[1,]
+Transcriptome1<-Transcriptome1[c(-1,-2,-3),]
+Transcriptome1<-Transcriptome1[,-c(6:41, 43)]
+colnames(Transcriptome1)<-c("Representative_protein_IDs", "Protein_IDs", "Majority_protein_IDs",
+                            "Protein_name", "Gene", "Adjusted_P_values","Classification")
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+
+colnames(Targeting2) <- Targeting2[1,]
+Targeting2<-Targeting2[-1,]
+Targeting2<-Targeting2[,-c(3:13)]
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+colnames(Targeting5)<-Targeting5[1,]
+Targeting5<-Targeting5[-1,]
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+Targeting5<-Targeting5[,-c(1:5, 8)]
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+colnames(Targeting5)<-c('id', 'gene', 'gene_description')
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+table(Large_scale$tumor)
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+Large_scale<-Large_scale[,-c(2,3)]
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+colnames(Large_scale)<-c('HGNC_symbol', 'type')
+
+```
+
+
+# GSE8879
+
+## Volcano plot
+
+Para la comparación ETP - Not ETP.
+
+![Volcano plot GSE8879](GSE8879/volcano_1.jpeg)
+
+
+## Heatmap
+
+![Heatmap GSE8879](GSE8879/heatmap_2.jpeg)
+
+## Dotplot
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE8879/GSE8879topTab_Anot.Rda')
+
+# load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData') 
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(dplyr)
+
+selGenes <- (topTab_GSE8879_Anot %>%
+    subset(adj.P.Val < 0.05) %>%
+    dplyr::select(ENTREZID) %>%
+    unique)[, 1]
+
+geneUniverse <- (topTab_GSE8879_Anot %>%
+    dplyr::select(ENTREZID) %>%
+    unique)[, 1]
+
+
+ego1 = enrichGO(gene = selGenes, universe = geneUniverse, keyType = "ENTREZID", OrgDb = org.Hs.eg.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+dotplot(ego1, showCategory = 7, title="ETP_not_ETP")
+
+```
+
+Todos los puntos son interesantes, al haber filtrado antes nuestros datos (adj.P.Val < 0.05 del toptab y pvalueCutoff = 0.05, qvalueCutoff = 0.05). Este gráfico es igual que si usáramos solo la primera condición, al ser las demás menos restrictivas.
+
+## Diagrama de Venn
+
+Los análisis de significación biológica se generaron a partir de los selGenes y geneUniverse, de la siguiente forma:
+
+library(ReactomePA)
+enrich.result <- enrichPathway(gene = selGenes_GSE8879,
+                               pvalueCutoff = 0.05,
+                               readable = T,
+                               organism = "human",
+                               universe = geneUniverse)
+                               
+Por lo que la información de estas listas nos proporcionará la base para el diagrama de Venn. A partir de esto se genero un df llamado Resultado_GSE8879.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+library("readxl")
+GSE8879_Transcriptome<-readxl::read_excel('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE8879/comparison_GSE8879_Transcriptome.xlsx')
+
+GSE8879_Targeting1<-readxl::read_excel('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE8879/comparison_GSE8879_Targeting1.xlsx')
+
+GSE8879_Targeting2<-readxl::read_excel('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE8879/comparison_GSE8879_Targeting2.xlsx')
+
+GSE8879_Targeting5<-readxl::read_excel('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE8879/comparison_GSE8879_Targeting5.xlsx')
+
+GSE8879_Large<-readxl::read_excel('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE8879/comparison_GSE8879_Large.xlsx')
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+a<-nrow(Transcriptome1)
+b<-nrow(Targeting2)
+d=nrow(Targeting5)
+e=nrow(Large_scale)
+f=length(selGenes)
+g<-nrow(GSE8879_Transcriptome)
+h=nrow(GSE8879_Targeting5)
+i=nrow(GSE8879_Targeting2)
+j=nrow(GSE8879_Large)
+```
+
+### Transcriptome
+
+Haremos un diagrama con los genes selGenes de GSE8879 y referente al artículo:  Huang, R., Han, M., Meng, L., & Chen, X. (2018). Transcriptome-wide discovery of coding and noncoding RNA-binding proteins. Proceedings of the National Academy of Sciences, 115(17), E3879-E3887.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = f, # sel genes
+                   area2 = a, # Transcriptome1
+                   cross.area = g, category = c("Genes GSE8879", "Genes Transcriptome"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+
+### Targeting
+
+Ahora con: Wang, E., Lu, S. X., Pastore, A., Chen, X., Imig, J., Lee, S. C. W., ... & Aifantis, I. (2019). Targeting an RNA-binding protein network in acute myeloid leukemia. Cancer cell, 35(3), 369-384.
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = f, # sel genes
+                   area2 = b, # Targeting2
+                   cross.area = i, category = c("Genes GSE8879", "Genes Targeting (tabla 2)"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = f, # sel genes
+                   area2 = d, # Targeting5
+                   cross.area = h, category = c("Genes GSE8879", "Genes Targeting (tabla 5)"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+
+### Large
+
+Ahora con: Wang, E., Lu, S. X., Pastore, A., Chen, X., Imig, J., Lee, S. C. W., ... & Aifantis, I. (2019). Targeting an RNA-binding protein network in acute myeloid leukemia. Cancer cell, 35(3), 369-384.
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = f, # sel genes
+                   area2 = e, # Large
+                   cross.area = j, category = c("Genes GSE8879", "Genes Large"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+
+
+# GSE10609
+
+
+## Volcano plot
+
+Grupos HOX11 - HOX11L2:
+
+![Volcano plot GSE10609](GSE10609/volcano_2.jpg)
+
+
+## Heatmap
+
+![Heatmap GSE10609](GSE10609/heatmap_2.jpg)
+
+## Dotplot
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE10609/GSE10609topTabs_Anot')
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+ls()
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+
+# load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData') 
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(dplyr)
+
+selGenes_GSE10609_LMO2TAL1 <- (topTab_GSE10609_LMO2TAL1_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_LMO2TAL1 <- (topTab_GSE10609_LMO2TAL1_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE10609_HOXATAL1 <- (topTab_GSE10609_HOXATAL1_Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_HOXATAL1 <- (topTab_GSE10609_HOXATAL1_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE10609_HOXALMO2 <- (topTab_GSE10609_HOXALMO2_Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_HOXALMO2 <- (topTab_GSE10609_HOXALMO2_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE10609_HOX11TAL1 <- (topTab_GSE10609_HOX11TAL1_Anot %>%
+                                    subset(adj.P.Val < 0.05) %>%
+                                    dplyr::select(ENTREZID) %>%
+                                    unique)[, 1]
+
+geneUniverse_HOX11TAL1 <- (topTab_GSE10609_HOX11TAL1_Anot %>%
+                               dplyr::select(ENTREZID) %>%
+                               unique)[, 1]
+
+selGenes_GSE10609_HOX11LMO2 <- (topTab_GSE10609_HOX11LMO2_Anot %>%
+                                    subset(adj.P.Val < 0.05) %>%
+                                    dplyr::select(ENTREZID) %>%
+                                    unique)[, 1]
+
+geneUniverse_HOX11LMO2 <- (topTab_GSE10609_HOX11LMO2_Anot %>%
+                               dplyr::select(ENTREZID) %>%
+                               unique)[, 1]
+
+
+
+selGenes_GSE10609_HOX11L2TAL1 <- (topTab_GSE10609_HOX11L2TAL1_Anot %>%
+                                      subset(adj.P.Val < 0.05) %>%
+                                      dplyr::select(ENTREZID) %>%
+                                      unique)[, 1]
+
+geneUniverse_HOX11L2TAL1 <- (topTab_GSE10609_HOX11L2TAL1_Anot %>%
+                                 dplyr::select(ENTREZID) %>%
+                                 unique)[, 1]
+
+
+
+
+selGenes_GSE10609_HOX11L2LMO2 <- (topTab_GSE10609_HOX11L2LMO2_Anot %>%
+                                      subset(adj.P.Val < 0.05) %>%
+                                      dplyr::select(ENTREZID) %>%
+                                      unique)[, 1]
+
+geneUniverse_HOX11L2LMO2 <- (topTab_GSE10609_HOX11L2LMO2_Anot %>%
+                                 dplyr::select(ENTREZID) %>%
+                                 unique)[, 1]
+
+
+selGenes_GSE10609_HOX11L2HOXA <- (topTab_GSE10609_HOX11L2HOXA_Anot %>%
+                                      subset(adj.P.Val < 0.05) %>%
+                                      dplyr::select(ENTREZID) %>%
+                                      unique)[, 1]
+
+geneUniverse_HOX11L2HOXA <- (topTab_GSE10609_HOX11L2HOXA_Anot %>%
+                                 dplyr::select(ENTREZID) %>%
+                                 unique)[, 1]
+
+
+
+selGenes_GSE10609_HOX11HOXA <- (topTab_GSE10609_HOX11HOXA_Anot %>%
+                                    subset(adj.P.Val < 0.05) %>%
+                                    dplyr::select(ENTREZID) %>%
+                                    unique)[, 1]
+
+geneUniverse_HOX11HOXA <- (topTab_GSE10609_HOX11HOXA_Anot %>%
+                               dplyr::select(ENTREZID) %>%
+                               unique)[, 1]
+
+
+selGenes_GSE10609_HOX11HOX11L2TAL1 <- (topTab_GSE10609_HOX11HOX11L2TAL1_Anot %>%
+                                           subset(adj.P.Val < 0.05) %>%
+                                           dplyr::select(ENTREZID) %>%
+                                           unique)[, 1]
+
+geneUniverse_HOX11HOX11L2TAL1 <- (topTab_GSE10609_HOX11HOX11L2TAL1_Anot %>%
+                                      dplyr::select(ENTREZID) %>%
+                                      unique)[, 1]
+
+
+
+selGenes_GSE10609_HOX11HOX11L2LMO2 <- (topTab_GSE10609_HOX11HOX11L2LMO2_Anot %>%
+                                           subset(adj.P.Val < 0.05) %>%
+                                           dplyr::select(ENTREZID) %>%
+                                           unique)[, 1]
+
+geneUniverse_HOX11HOX11L2LMO2 <- (topTab_GSE10609_HOX11HOX11L2LMO2_Anot %>%
+                                      dplyr::select(ENTREZID) %>%
+                                      unique)[, 1]
+
+
+
+selGenes_GSE10609_HOX11HOX11L2HOXA <- (topTab_GSE10609_HOX11HOX11L2HOXA_Anot %>%
+                                           subset(adj.P.Val < 0.05) %>%
+                                           dplyr::select(ENTREZID) %>%
+                                           unique)[, 1]
+
+geneUniverse_HOX11HOX11L2HOXA <- (topTab_GSE10609_HOX11HOX11L2HOXA_Anot %>%
+                                      dplyr::select(ENTREZID) %>%
+                                      unique)[, 1]
+
+
+selGenes_GSE10609_HOX <- (topTab_GSE10609_HOX_Anot %>%
+                              subset(adj.P.Val < 0.05) %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+geneUniverse_HOX <- (topTab_GSE10609_HOX_Anot %>%
+                         dplyr::select(ENTREZID) %>%
+                         unique)[, 1]
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE, error=TRUE}
+library(hgu133plus2.db)
+
+par(mfrow=c(1,2))
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOX, universe = geneUniverse_HOX, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX11 - HOX11L2')
+
+# no bien:
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOX11HOX11L2HOXA, universe = geneUniverse_HOX11HOX11L2HOXA, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX11 + HOX11L2 - HOXA')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOX11HOXA, universe = geneUniverse_HOX11HOXA, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX11 - HOXA')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOXALMO2, universe = geneUniverse_HOXALMO2, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOXA - LMO2')
+
+
+
+# bien:
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOX11HOXA, universe = geneUniverse_HOX11HOXA, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX11 - HOXA')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOX11L2HOXA, universe = geneUniverse_HOX11L2HOXA, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX11L2 - HOXA')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOX11L2TAL1, universe = geneUniverse_HOX11L2TAL1, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX11L2 - TAL1')
+
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOX11LMO2, universe = geneUniverse_HOX11LMO2, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX11 - LMO2')
+
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOXALMO2, universe = geneUniverse_HOXALMO2, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOXA - LMO2')
+
+par(mfrow=c(1,2))
+
+ego1 = enrichGO(gene = selGenes_GSE10609_HOXATAL1, universe = geneUniverse_HOXATAL1, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOXA - TAL1')
+
+
+```
+
+
+
+Todos los puntos son interesantes, al haber filtrado antes nuestros datos (adj.P.Val < 0.05 del toptab y pvalueCutoff = 0.05, qvalueCutoff = 0.05). Este gráfico es igual que si usáramos solo la primera condición, al ser las demás menos restrictivas.
+
+## Diagrama de Venn
+
+Los análisis de significación biológica se generaron a partir de los selGenes y geneUniverse, de la siguiente forma:
+
+library(ReactomePA)
+enrich.result <- enrichPathway(gene = selGenes_GSE8879,
+                               pvalueCutoff = 0.05,
+                               readable = T,
+                               organism = "human",
+                               universe = geneUniverse)
+                               
+Por lo que la información de estas listas nos proporcionará la base para el diagrama de Venn. A partir de esto se genero un df llamado Resultado_GSE8879.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+library("readxl")
+
+(filenames<-list.files("C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE10609/", pattern="comparison*", full.names=TRUE))
+ldf <- lapply(filenames, readxl::read_excel)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+a<-nrow(Transcriptome1)
+b<-nrow(Targeting2)
+d=nrow(Targeting5)
+e=nrow(Large_scale)
+f=dim(ldf[[1]])[1]
+g=dim(ldf[[2]])[1]
+  h=dim(ldf[[3]])[1]
+  i=dim(ldf[[4]])[1]
+  j=dim(ldf[[5]])[1]
+  k=dim(ldf[[6]])[1]
+  l=dim(ldf[[7]])[1]
+  m=dim(ldf[[8]])[1]
+  n=dim(ldf[[9]])[1]
+  o=dim(ldf[[10]])[1]
+  p=dim(ldf[[11]])[1]
+  q=dim(ldf[[12]])[1]
+  r=dim(ldf[[13]])[1]
+  s=dim(ldf[[14]])[1]
+  t=dim(ldf[[15]])[1]
+  u=dim(ldf[[16]])[1]
+  v=dim(ldf[[17]])[1]
+  w=dim(ldf[[17]])[1]
+    x=dim(ldf[[17]])[1]
+    y=dim(ldf[[18]])[1]
+    z=dim(ldf[[19]])[1]
+    aa=dim(ldf[[20]])[1]
+    bb=dim(ldf[[21]])[1]
+    cc=dim(ldf[[22]])[1]
+    dd=dim(ldf[[23]])[1]
+    ee=dim(ldf[[24]])[1]
+    ff=dim(ldf[[25]])[1]
+    gg=dim(ldf[[26]])[1]
+    hh=dim(ldf[[27]])[1]
+    ii=dim(ldf[[28]])[1]
+    jj=dim(ldf[[29]])[1]
+    kk=dim(ldf[[30]])[1]
+    ll=dim(ldf[[31]])[1]
+    mm=dim(ldf[[32]])[1]
+    nn=dim(ldf[[33]])[1]
+oo=dim(ldf[[35]])[1]
+pp=dim(ldf[[36]])[1]
+qq=dim(ldf[[37]])[1]
+rr=dim(ldf[[38]])[1]
+ss=dim(ldf[[39]])[1]
+tt=dim(ldf[[40]])[1]
+uu=dim(ldf[[41]])[1]
+vv=dim(ldf[[42]])[1]
+ww=dim(ldf[[43]])[1]
+xx=dim(ldf[[44]])[1]
+yy=dim(ldf[[45]])[1]
+zz=dim(ldf[[46]])[1]
+ab=dim(ldf[[47]])[1]
+cd=dim(ldf[[48]])[1]
+ef=dim(ldf[[49]])[1]
+gh=dim(ldf[[50]])[1]
+ij=dim(ldf[[51]])[1]
+
+```
+
+### Transcriptome
+
+Haremos un diagrama con los genes selGenes de GSE8879 y referente al artículo:  Huang, R., Han, M., Meng, L., & Chen, X. (2018). Transcriptome-wide discovery of coding and noncoding RNA-binding proteins. Proceedings of the National Academy of Sciences, 115(17), E3879-E3887.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = length(selGenes_GSE10609_HOX), # sel genes HOX
+                   area2 = a, # Transcriptome1
+                   cross.area = j, category = c("Genes GSE10609_HOX", "Genes Transcriptome"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = length(selGenes_GSE10609_HOX11HOX11L2HOXA), 
+                   area2 = a, # Transcriptome1
+                   cross.area = o, category = c("Genes GSE10609_HOX11HOX11L2HOXA", "Genes Transcriptome"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+
+
+### Targeting
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = length(selGenes_GSE10609_HOX11HOX11L2HOXA), 
+                   area2 = b, # Targeting2
+                   cross.area = o, category = c("Genes GSE10609_HOX11HOX11L2HOXA", "Genes Targeting2"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = length(selGenes_GSE10609_HOX11HOX11L2HOXA), 
+                   area2 = d, # Targeting5
+                   cross.area = o, category = c("Genes GSE10609_HOX11HOX11L2HOXA", "Genes Targeting5"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+### Large
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(VennDiagram)
+grid.newpage()
+draw.pairwise.venn(area1 = length(selGenes_GSE10609_HOX11HOX11L2HOXA), 
+                   area2 = j, # Large
+                   cross.area = o, category = c("Genes GSE10609_HOX11HOX11L2HOXA", "Genes Large"), lty = rep("blank", 
+    2), fill = c("light blue", "gray"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2))
+```
+
+
+# GSE14618
+
+
+## Volcano plot
+
+Comparación C - F_g:
+
+![Volcano plot GPL570](GSE14618/volcano_GPL570_2.jpg)
+
+Comparación C - F_g:
+
+![Volcano plot GPL96](GSE14618/volcano_GPL96_2.jpg)
+
+
+
+
+## Heatmap
+
+![Heatmap GPL570](GSE14618/heatmap_GPL570_2.jpg)
+
+
+![Heatmap GPL96](GSE14618/heatmap_GPL96_2.jpg)
+
+
+
+
+## Dotplot
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE14618/GSE14618_GPL570_topTabs_Anot.RData')
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE14618/GSE14618_GPL96_topTabs_Anot.RData')
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+
+# load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData') 
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(dplyr)
+
+# GPL570
+selGenes_GPL570_CFAnot <- (topTab_GSE14618_GPL570_CFAnot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GPL570_CFAnot <- (topTab_GSE14618_GPL570_CFAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GPL570_CNRAnot <- (topTab_GSE14618_GPL570_CNRAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GPL570_CNRAnot <- (topTab_GSE14618_GPL570_CNRAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GPL570_FNRAnot <- (topTab_GSE14618_GPL570_FNRAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GPL570_FNRAnot <- (topTab_GSE14618_GPL570_FNRAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# GPL96
+
+selGenes_GPL96_CFAnot <- (topTab_GSE14618_GPL96_CFAnot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GPL96_CFAnot <- (topTab_GSE14618_GPL96_CFAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GPL96_CNRAnot <- (topTab_GSE14618_GPL96_CNRAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GPL96_CNRAnot <- (topTab_GSE14618_GPL96_CNRAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GPL96_FNRAnot <- (topTab_GSE14618_GPL96_FNRAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GPL96_FNRAnot <- (topTab_GSE14618_GPL96_FNRAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(hgu133plus2.db)
+
+par(mfrow=c(1,2))
+
+
+ego1 = enrichGO(gene = selGenes_GPL570_CNRAnot, universe = geneUniverse_GPL570_CNRAnot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='GPL570 C - NR')
+
+
+
+ego1 = enrichGO(gene = selGenes_GPL570_FNRAnot, universe = geneUniverse_GPL570_FNRAnot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='GPL570 F_g - NR')
+
+
+
+ego1 = enrichGO(gene = selGenes_GPL96_CNRAnot, universe = geneUniverse_GPL96_CNRAnot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='GPL96 C - NR')
+
+
+
+ego1 = enrichGO(gene = selGenes_GPL96_FNRAnot, universe = geneUniverse_GPL96_FNRAnot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='GPL96 F_g - NR')
+
+par(mfrow=c(1,2))
+```
+
+
+
+# GSE26713
+
+## Volcano plot
+
+De la comparación BM - HOXA:
+
+![Volcano plot GSE26713](GSE26713/volcano_2.jpg)
+
+
+## Heatmap
+
+![Heatmap GSE26713](GSE26713/heatmap_2.jpg)
+
+
+
+## Dotplot
+
+Se mostrará un ejemplo de creación de estos graficos:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/GSE26713topTabs_Anot.RData')
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE26713/NUEVOResultado_GSE26713.rda')
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+ls()
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+
+# load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData') 
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(dplyr)
+
+selGenes_GSE26713_BMHOXAAnot <- (topTab_GSE26713_BMHOXAAnot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMHOXAAnot <- (topTab_GSE26713_BMHOXAAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_BMLMO1Anot <- (topTab_GSE26713_BMLMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMLMO1Anot <- (topTab_GSE26713_BMLMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_BMLMO2Anot <- (topTab_GSE26713_BMLMO2Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMLMO2Anot <- (topTab_GSE26713_BMLMO2Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_BMMYBAnot <- (topTab_GSE26713_BMMYBAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMMYBAnot <- (topTab_GSE26713_BMMYBAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [5] "topTab_GSE26713_BMLMO1Anot"       "topTab_GSE26713_BMLMO2Anot"       "topTab_GSE26713_BMMYBAnot"        "topTab_GSE26713_BMTAL1Anot"      
+
+
+selGenes_GSE26713_BMTAL1Anot <- (topTab_GSE26713_BMTAL1Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMTAL1Anot <- (topTab_GSE26713_BMTAL1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_BMTAL2Anot <- (topTab_GSE26713_BMTAL2Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMTAL2Anot <- (topTab_GSE26713_BMTAL2Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_BMTAL2LMO1Anot <- (topTab_GSE26713_BMTAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMTAL2LMO1Anot <- (topTab_GSE26713_BMTAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+#  [9] "topTab_GSE26713_BMTAL2Anot"       "topTab_GSE26713_BMTAL2LMO1Anot"   "topTab_GSE26713_BMTLX1Anot"       "topTab_GSE26713_BMTLX3Anot"      
+
+
+selGenes_GSE26713_BMTLX1Anot <- (topTab_GSE26713_BMTLX1Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMTLX1Anot <- (topTab_GSE26713_BMTLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_BMTLX3Anot <- (topTab_GSE26713_BMTLX3Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_BMTLX3Anot <- (topTab_GSE26713_BMTLX3Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_HOXALMO1Anot <- (topTab_GSE26713_HOXALMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_HOXALMO1Anot <- (topTab_GSE26713_HOXALMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [13] "topTab_GSE26713_HOXALMO1Anot"     "topTab_GSE26713_HOXALMO2Anot"     "topTab_GSE26713_HOXATAL1Anot"     "topTab_GSE26713_HOXATAL2Anot"    
+
+
+
+selGenes_GSE26713_HOXALMO2Anot <- (topTab_GSE26713_HOXALMO2Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_HOXALMO2Anot <- (topTab_GSE26713_HOXALMO2Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_HOXATAL1Anot <- (topTab_GSE26713_HOXATAL1Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_HOXATAL1Anot <- (topTab_GSE26713_HOXATAL1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_HOXATAL2Anot <- (topTab_GSE26713_HOXATAL2Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_HOXATAL2Anot <- (topTab_GSE26713_HOXATAL2Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_HOXATAL2LMO1Anot <- (topTab_GSE26713_HOXATAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_HOXATAL2LMO1Anot <- (topTab_GSE26713_HOXATAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+
+selGenes_GSE26713_HOXATLX1Anot <- (topTab_GSE26713_HOXATLX1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_HOXATLX1Anot <- (topTab_GSE26713_HOXATLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [17] "topTab_GSE26713_HOXATAL2LMO1Anot" "topTab_GSE26713_HOXATLX1Anot"     "topTab_GSE26713_HOXATLX3Anot"     "topTab_GSE26713_LMO1LMO2MYBAnot" 
+
+
+selGenes_GSE26713_HOXATLX3Anot <- (topTab_GSE26713_HOXATLX3Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_HOXATLX3Anot <- (topTab_GSE26713_HOXATLX3Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_LMO1LMO2MYBAnot <- (topTab_GSE26713_LMO1LMO2MYBAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMO1LMO2MYBAnot <- (topTab_GSE26713_LMO1LMO2MYBAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_LMO1MYBAnot <- (topTab_GSE26713_LMO1MYBAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMO1MYBAnot <- (topTab_GSE26713_LMO1MYBAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_LMO2TAL1Anot <- (topTab_GSE26713_LMO2TAL1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMO2TAL1Anot <- (topTab_GSE26713_LMO2TAL1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+# [21] "topTab_GSE26713_LMO1MYBAnot"      "topTab_GSE26713_LMO2TAL1Anot"     "topTab_GSE26713_LMO2TAL2Anot"     "topTab_GSE26713_LMO2TAL2LMO1Anot"
+
+
+
+selGenes_GSE26713_LMO2TAL2Anot <- (topTab_GSE26713_LMO2TAL2Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMO2TAL2Anot <- (topTab_GSE26713_LMO2TAL2Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_LMO2TAL2LMO1Anot <- (topTab_GSE26713_LMO2TAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMO2TAL2LMO1Anot <- (topTab_GSE26713_LMO2TAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_LMO2TLX1Anot <- (topTab_GSE26713_LMO2TLX1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMO2TLX1Anot <- (topTab_GSE26713_LMO2TLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_LMO2TLX3Anot <- (topTab_GSE26713_LMO2TLX3Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMO2TLX3Anot <- (topTab_GSE26713_LMO2TLX3Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [25] "topTab_GSE26713_LMO2TLX1Anot"     "topTab_GSE26713_LMO2TLX3Anot"     "topTab_GSE26713_LMOAnot"          "topTab_GSE26713_LMOBMAnot"       
+
+
+selGenes_GSE26713_LMOAnot <- (topTab_GSE26713_LMOAnot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMOAnot <- (topTab_GSE26713_LMOAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_LMOBMAnot <- (topTab_GSE26713_LMOBMAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMOBMAnot <- (topTab_GSE26713_LMOBMAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_LMOTAL1Anot <- (topTab_GSE26713_LMOTAL1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMOTAL1Anot <- (topTab_GSE26713_LMOTAL1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_LMOTAL2Anot <- (topTab_GSE26713_LMOTAL2Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMOTAL2Anot <- (topTab_GSE26713_LMOTAL2Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+# [29] "topTab_GSE26713_LMOTAL1Anot"      "topTab_GSE26713_LMOTAL2Anot"      "topTab_GSE26713_LMOTAL2LMO1Anot"  "topTab_GSE26713_LMOTALAnot"      
+
+
+
+selGenes_GSE26713_LMOTAL2LMO1Anot <- (topTab_GSE26713_LMOTAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMOTAL2LMO1Anot <- (topTab_GSE26713_LMOTAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_LMOTALAnot <- (topTab_GSE26713_LMOTALAnot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMOTALAnot <- (topTab_GSE26713_LMOTALAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_LMOTLX1Anot <- (topTab_GSE26713_LMOTLX1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMOTLX1Anot <- (topTab_GSE26713_LMOTLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_LMOTLX3Anot <- (topTab_GSE26713_LMOTLX3Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_LMOTLX3Anot <- (topTab_GSE26713_LMOTLX3Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+
+selGenes_GSE26713_MYBTAL1Anot <- (topTab_GSE26713_MYBTAL1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_MYBTAL1Anot <- (topTab_GSE26713_MYBTAL1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_MYBTAL2Anot <- (topTab_GSE26713_MYBTAL2Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_MYBTAL2Anot <- (topTab_GSE26713_MYBTAL2Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_MYBTAL2LMO1Anot <- (topTab_GSE26713_MYBTAL2LMO1Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_MYBTAL2LMO1Anot <- (topTab_GSE26713_MYBTAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [33] "topTab_GSE26713_LMOTLX1Anot"      "topTab_GSE26713_LMOTLX3Anot"      "topTab_GSE26713_MYBTAL1Anot"      "topTab_GSE26713_MYBTAL2Anot"     
+# [37] "topTab_GSE26713_MYBTAL2LMO1Anot"  "topTab_GSE26713_MYBTLX1Anot"      "topTab_GSE26713_MYBTLX3Anot"      "topTab_GSE26713_TAL1TAL2LMO1Anot"
+
+
+selGenes_GSE26713_MYBTLX1Anot <- (topTab_GSE26713_MYBTLX1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_MYBTLX1Anot <- (topTab_GSE26713_MYBTLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_MYBTLX3Anot <- (topTab_GSE26713_MYBTLX3Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_MYBTLX3Anot <- (topTab_GSE26713_MYBTLX3Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+
+selGenes_GSE26713_TAL1TAL2LMO1Anot <- (topTab_GSE26713_TAL1TAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TAL1TAL2LMO1Anot <- (topTab_GSE26713_TAL1TAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_GSE26713_TAL1TLX1Anot <- (topTab_GSE26713_TAL1TLX1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TAL1TLX1Anot <- (topTab_GSE26713_TAL1TLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_TAL1TLX3Anot <- (topTab_GSE26713_TAL1TLX3Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TAL1TLX3Anot <- (topTab_GSE26713_TAL1TLX3Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+# [41] "topTab_GSE26713_TAL1TLX1Anot"     "topTab_GSE26713_TAL1TLX3Anot"     "topTab_GSE26713_TAL2LMO1Anot"     "topTab_GSE26713_TAL2LMO1TLX1Anot"
+
+
+
+selGenes_GSE26713_TAL2LMO1Anot <- (topTab_GSE26713_TAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TAL2LMO1Anot <- (topTab_GSE26713_TAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_TAL2LMO1TLX1Anot <- (topTab_GSE26713_TAL2LMO1TLX1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TAL2LMO1TLX1Anot <- (topTab_GSE26713_TAL2LMO1TLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+
+selGenes_GSE26713_TAL2TAL2LMO1Anot <- (topTab_GSE26713_TAL2TAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TAL2TAL2LMO1Anot <- (topTab_GSE26713_TAL2TAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_GSE26713_TAL2TLX1Anot <- (topTab_GSE26713_TAL2TLX1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TAL2TLX1Anot <- (topTab_GSE26713_TAL2TLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_TAL2TLX3Anot <- (topTab_GSE26713_TAL2TLX3Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TAL2TLX3Anot <- (topTab_GSE26713_TAL2TLX3Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [45] "topTab_GSE26713_TAL2TAL2LMO1Anot" "topTab_GSE26713_TAL2TLX1Anot"     "topTab_GSE26713_TAL2TLX3Anot"     "topTab_GSE26713_TALAnot"         
+
+
+
+selGenes_GSE26713_TALAnot <- (topTab_GSE26713_TALAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TALAnot <- (topTab_GSE26713_TALAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_TALBMAnot <- (topTab_GSE26713_TALBMAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TALBMAnot <- (topTab_GSE26713_TALBMAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+
+selGenes_GSE26713_TALMYBAnot <- (topTab_GSE26713_TALMYBAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TALMYBAnot <- (topTab_GSE26713_TALMYBAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+# [49] "topTab_GSE26713_TALBMAnot"        "topTab_GSE26713_TALMYBAnot"       "topTab_GSE26713_TALTAL2LMO1Anot"  "topTab_GSE26713_TALTLX1Anot"     
+
+
+selGenes_GSE26713_TALTAL2LMO1Anot <- (topTab_GSE26713_TALTAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TALTAL2LMO1Anot <- (topTab_GSE26713_TALTAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_TALTLX1Anot <- (topTab_GSE26713_TALTLX1Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TALTLX1Anot <- (topTab_GSE26713_TALTLX1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_TALTLX3Anot <- (topTab_GSE26713_TALTLX3Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TALTLX3Anot <- (topTab_GSE26713_TALTLX3Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [53] "topTab_GSE26713_TALTLX3Anot"      "topTab_GSE26713_TALTLXAnot"       "topTab_GSE26713_TALTLXLAnot"      "topTab_GSE26713_TLXAnot"         
+
+
+selGenes_GSE26713_TALTLXAnot <- (topTab_GSE26713_TALTLXAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TALTLXAnot <- (topTab_GSE26713_TALTLXAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+
+selGenes_GSE26713_TALTLXLAnot <- (topTab_GSE26713_TALTLXLAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TALTLXLAnot <- (topTab_GSE26713_TALTLXLAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_GSE26713_TLXAnot <- (topTab_GSE26713_TLXAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TLXAnot <- (topTab_GSE26713_TLXAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_TLXBMAnot <- (topTab_GSE26713_TLXBMAnot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TLXBMAnot <- (topTab_GSE26713_TLXBMAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE26713_TLXMYBAnot <- (topTab_GSE26713_TLXMYBAnot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TLXMYBAnot <- (topTab_GSE26713_TLXMYBAnot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE26713_TLXTAL1Anot <- (topTab_GSE26713_TLXTAL1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TLXTAL1Anot <- (topTab_GSE26713_TLXTAL1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [57] "topTab_GSE26713_TLXBMAnot"        "topTab_GSE26713_TLXMYBAnot"       "topTab_GSE26713_TLXTAL1Anot"      "topTab_GSE26713_TLXTAL2Anot"     
+# [61] "topTab_GSE26713_TLXTAL2LMO1Anot"
+
+
+selGenes_GSE26713_TLXTAL2Anot <- (topTab_GSE26713_TLXTAL2Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TLXTAL2Anot <- (topTab_GSE26713_TLXTAL2Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_GSE26713_TLXTAL2LMO1Anot <- (topTab_GSE26713_TLXTAL2LMO1Anot %>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE26713_TLXTAL2LMO1Anot <- (topTab_GSE26713_TLXTAL2LMO1Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+```
+
+
+
+
+```{r, warning=TRUE, error=FALSE, echo=FALSE}
+library(hgu133plus2.db)
+
+par(mfrow=c(1,2))
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMHOXAAnot, universe = geneUniverse_GSE26713_BMHOXAAnot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - HOXA')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMLMO1Anot, universe = geneUniverse_GSE26713_BMLMO1Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - LMO1')
+
+# "topTab_GSE26713_BMHOXAAnot"      
+#  [5] "topTab_GSE26713_BMLMO1Anot"       "topTab_GSE26713_BMLMO2Anot"       "topTab_GSE26713_BMMYBAnot"        "topTab_GSE26713_BMTAL1Anot"      
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMLMO2Anot, universe = geneUniverse_GSE26713_BMLMO2Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - LMO2')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMMYBAnot, universe = geneUniverse_GSE26713_BMMYBAnot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - MYB')
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMTAL1Anot, universe = geneUniverse_GSE26713_BMTAL1Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - TAL1')
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMTAL2Anot, universe = geneUniverse_GSE26713_BMTAL2Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - TAL2')
+
+#  [9] "topTab_GSE26713_BMTAL2Anot"       "topTab_GSE26713_BMTAL2LMO1Anot"   "topTab_GSE26713_BMTLX1Anot"       "topTab_GSE26713_BMTLX3Anot"      
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMTAL2LMO1Anot, universe = geneUniverse_GSE26713_BMTAL2LMO1Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - TAL2_LMO1')
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMTLX1Anot, universe = geneUniverse_GSE26713_BMTLX1Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - TLX1')
+
+ego1 = enrichGO(gene = selGenes_GSE26713_BMTLX3Anot, universe = geneUniverse_GSE26713_BMTLX3Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='BM - TLX3')
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_HOXALMO1Anot, universe = geneUniverse_GSE26713_HOXALMO1Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOXA - LMO1')
+
+# [13] "topTab_GSE26713_HOXALMO1Anot"     "topTab_GSE26713_HOXALMO2Anot"     "topTab_GSE26713_HOXATAL1Anot"     "topTab_GSE26713_HOXATAL2Anot"    
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE26713_HOXATAL1Anot, universe = geneUniverse_GSE26713_HOXATAL1Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOXA - TAL1')
+
+ego1 = enrichGO(gene = selGenes_GSE26713_HOXATAL2Anot, universe = geneUniverse_GSE26713_HOXATAL2Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOXA - TAL2')
+
+# [17] "topTab_GSE26713_HOXATAL2LMO1Anot" "topTab_GSE26713_HOXATLX1Anot"     "topTab_GSE26713_HOXATLX3Anot"     "topTab_GSE26713_LMO1LMO2MYBAnot" 
+# [21] "topTab_GSE26713_LMO1MYBAnot"      "topTab_GSE26713_LMO2TAL1Anot"     "topTab_GSE26713_LMO2TAL2Anot"     "topTab_GSE26713_LMO2TAL2LMO1Anot"
+# [25] "topTab_GSE26713_LMO2TLX1Anot"     "topTab_GSE26713_LMO2TLX3Anot"     "topTab_GSE26713_LMOAnot
+
+ego1 = enrichGO(gene = selGenes_GSE26713_HOXATLX3Anot, universe = geneUniverse_GSE26713_HOXATLX3Anot, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOXA - TLX3')
+
+
+par(mfrow=c(1,1))
+```
+
+
+
+
+# GSE28703
+
+
+## Volcano plot
+
+Comparación early_T_ALL - non_ETP:
+
+![Volcano plot GSE28703](GSE28703/volcano_2.jpg)
+
+
+
+
+## Heatmap
+
+![Heatmap GSE28703](GSE28703/heatmap_2.jpg)
+
+
+
+
+
+## Dotplot
+
+
+```{r, warning=TRUE, error=FALSE, echo=FALSE, echo=FALSE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData')
+```
+
+
+
+```{r, warning=TRUE, error=FALSE, echo=FALSE}
+
+# load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData') 
+library(clusterProfiler)
+library(hthgu133pluspm.db)
+library(dplyr)
+
+selGenes_GSE28703 <- (topTab_GSE28703Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE28703 <- (topTab_GSE28703Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+```
+
+```{r, warning=TRUE, error=FALSE, echo=FALSE}
+library(hthgu133pluspm.db)
+
+par(mfrow=c(1,1))
+
+
+ego1 = enrichGO(gene = selGenes_GSE28703, universe = geneUniverse_GSE28703, keyType = "ENTREZID", OrgDb = hthgu133pluspm.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='Early T ALL - Not ETP')
+
+```
+
+
+
+
+# GSE32215
+
+
+## Volcano plot
+
+Comparación adult T-ALL - pediatric T-ALL:
+
+![Volcano plot GSE32215](GSE32215/volcano_2.jpg)
+
+
+
+
+## Heatmap
+
+![Heatmap GSE32215](GSE32215/heatmap_2.jpg)
+
+
+
+
+
+## Dotplot
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE32215/GSE32215_topTabAnot.Rda')
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+
+# load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData') 
+library(clusterProfiler)
+library(hthgu133pluspm.db)
+library(dplyr)
+library(ReactomePA)
+# GPL570
+selGenes_GSE32215 <- (topTab_GSE32215_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE32215 <- (topTab_GSE32215_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+enrich.result <- enrichPathway(gene = selGenes_GSE32215,
+                               pvalueCutoff = 0.05,
+                               readable = T,
+                               organism = "human",
+                               universe = geneUniverse_GSE32215)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library(clusterProfiler)
+library(ReactomePA)
+
+
+
+y.kegg <- enrichKEGG(selGenes_GSE32215, pvalueCutoff=0.05)
+
+# merge the results
+out <-  merge_result( list("Reactome"=enrich.result, "KEGG"=y.kegg))
+
+dotplot(out, showCategory=5, title='Adult T-ALL - Pediatric T-ALL')
+
+```
+
+
+
+
+
+# GSE33469
+
+Solo hay un grupo. No pudimos hacer el análisis. Todas las muestras son de pacientes con T-ALL. Nopodemos realizar el volcano plot porque se realiza a partir de la matriz de contrastes entre grupos.
+
+## Heatmap
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+load("C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE33469/GSE33469_datos.normalizados.Rda")
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+library('illuminaHumanv4.db')
+
+exprs2cluster <- exprs(eset_GSE33469_Filtered)
+symbols <- eset_GSE33469_Filtered@featureData@data[["Gene symbol"]]
+colnames(exprs2cluster) <- eset_GSE33469_Filtered@phenoData@data[["shortName"]]
+rownames(exprs2cluster) <- symbols
+
+```
+
+
+ 
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=TRUE}
+library("gplots")
+heatmap.2(exprs2cluster, col=topo.colors(75), scale="none", ColSideColors=rep('red', 57),
+          key=TRUE, symkey=FALSE, density.info="none", trace="none", cexRow=0.5)
+
+```
+
+Tampoco podemos realizar el dotplot porque es referente al análisis de enriquecimiento que no se ha podido realizar.
+
+
+
+
+
+# GSE33470
+
+## Volcano plot
+
+Comparación CD3masCD4_mas - CD3masCD8_mas:
+
+![Volcano plot GSE33470](GSE33470/volcano_1.jpeg)
+
+
+
+
+## Heatmap
+
+![Heatmap GSE33470](GSE33470/heatmap.jpeg)
+
+
+
+
+
+## Dotplot
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE33470/GSE33470topTabs_Anot.Rda')
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+ls()
+```
+
+```{r, warning=TRUE, error=FALSE, echo=FALSE}
+
+# load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData') 
+library(clusterProfiler)
+library(illuminaHumanv4.db)
+library(dplyr)
+
+selGenes_GSE33470CD3 <- (topTab_GSE33470CD3_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3 <- (topTab_GSE33470CD3_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [1] "topTab_GSE33470CD3_Anot"                    "topTab_GSE33470CD34_Anot"                  
+#  [3] "topTab_GSE33470CD34CD4_Anot"                "topTab_GSE33470CD34DPCD3_Anot"             
+
+selGenes_GSE33470CD34 <- (topTab_GSE33470CD34_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34 <- (topTab_GSE33470CD34_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE33470CD34CD4 <- (topTab_GSE33470CD34CD4_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34CD4 <- (topTab_GSE33470CD34CD4_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD34DPCD3 <- (topTab_GSE33470CD34DPCD3_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34DPCD3 <- (topTab_GSE33470CD34DPCD3_Anot %>%
+                              dplyr::select(ENTREZID) %>%                   
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD34masmasCD4 <- (topTab_GSE33470CD34masmasCD4_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34masmasCD4 <- (topTab_GSE33470CD34masmasCD4_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD34masmasDPCD3ma <- (topTab_GSE33470CD34masmasDPCD3mas_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34masmasDPCD3ma <- (topTab_GSE33470CD34masmasDPCD3mas_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+#  [5] "topTab_GSE33470CD34masmasCD4_Anot"          "topTab_GSE33470CD34masmasDPCD3mas_Anot"    
+#  [7] "topTab_GSE33470CD34masmasDPCD3menos_Anot"   "topTab_GSE33470CD34masmenosCD4_Anot"       
+
+
+selGenes_GSE33470CD34masmasDPCD3menos <- (topTab_GSE33470CD34masmasDPCD3menos_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34masmasDPCD3menos <- (topTab_GSE33470CD34masmasDPCD3menos_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD34masmenosCD4 <- (topTab_GSE33470CD34masmenosCD4_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34masmenosCD4 <- (topTab_GSE33470CD34masmenosCD4_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD34masmenosDPCD3mas <- (topTab_GSE33470CD34masmenosDPCD3mas_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34masmenosDPCD3mas <- (topTab_GSE33470CD34masmenosDPCD3mas_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD34masmenosDPCD3menos <- (topTab_GSE33470CD34masmenosDPCD3menos_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD34masmenosDPCD3menos <- (topTab_GSE33470CD34masmenosDPCD3menos_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD3CD34 <- (topTab_GSE33470CD3CD34_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3CD34 <- (topTab_GSE33470CD3CD34_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+#  [9] "topTab_GSE33470CD34masmenosDPCD3mas_Anot"   "topTab_GSE33470CD34masmenosDPCD3menos_Anot"
+# [11] "topTab_GSE33470CD3CD34_Anot"                "topTab_GSE33470CD3CD4_Anot"                
+# [13] "topTab_GSE33470CD3DPCD3_Anot"               "topTab_GSE33470CD3masCD4CD34masmas_Anot"   
+
+
+selGenes_GSE33470CD3CD4 <- (topTab_GSE33470CD3CD4_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3CD4 <- (topTab_GSE33470CD3CD4_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD3DPCD3 <- (topTab_GSE33470CD3DPCD3_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3DPCD3 <- (topTab_GSE33470CD3DPCD3_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD3masCD4CD34masmas <- (topTab_GSE33470CD3masCD4CD34masmas_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD4CD34masmas <- (topTab_GSE33470CD3masCD4CD34masmas_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD3masCD4CD34masmeno <- (topTab_GSE33470CD3masCD4CD34masmeno_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD4CD34masmeno <- (topTab_GSE33470CD3masCD4CD34masmeno_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD3masCD4CD4 <- (topTab_GSE33470CD3masCD4CD4_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD4CD4 <- (topTab_GSE33470CD3masCD4CD4_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE33470CD3masCD4DPCD3mas <- (topTab_GSE33470CD3masCD4DPCD3mas_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD4DPCD3mas <- (topTab_GSE33470CD3masCD4DPCD3mas_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [15] "topTab_GSE33470CD3masCD4CD34masmeno_Anot"   "topTab_GSE33470CD3masCD4CD4_Anot"          
+# [17] "topTab_GSE33470CD3masCD4DPCD3mas_Anot"      "topTab_GSE33470CD3masCD4DPCD3menos_Anot"   
+# [19] "topTab_GSE33470CD3masCD8CD34masmas_Anot"    "topTab_GSE33470CD3masCD8CD34masmenos_Anot" 
+
+
+
+selGenes_GSE33470CD3masCD4DPCD3menos <- (topTab_GSE33470CD3masCD4DPCD3menos_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD4DPCD3menos <- (topTab_GSE33470CD3masCD4DPCD3menos_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD3masCD8CD34masmas <- (topTab_GSE33470CD3masCD8CD34masmas_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD8CD34masmas <- (topTab_GSE33470CD3masCD8CD34masmas_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD3masCD8CD34masmenos <- (topTab_GSE33470CD3masCD8CD34masmenos_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD8CD34masmenos <- (topTab_GSE33470CD3masCD8CD34masmenos_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE33470CD3masCD8CD4 <- (topTab_GSE33470CD3masCD8CD4_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD8CD4 <- (topTab_GSE33470CD3masCD8CD4_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD3masCD8DPCD3mas <- (topTab_GSE33470CD3masCD8DPCD3mas_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD8DPCD3mas <- (topTab_GSE33470CD3masCD8DPCD3mas_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [21] "topTab_GSE33470CD3masCD8CD4_Anot"           "topTab_GSE33470CD3masCD8DPCD3mas_Anot"     
+# [23] "topTab_GSE33470CD3masCD8DPCD3menos_Anot"    "topTab_GSE33470CD4DPCD3_Anot"              
+   
+
+selGenes_GSE33470CD3masCD8DPCD3menos <- (topTab_GSE33470CD3masCD8DPCD3menos_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD3masCD8DPCD3menos <- (topTab_GSE33470CD3masCD8DPCD3menos_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD4DPCD3 <- (topTab_GSE33470CD4DPCD3_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD4DPCD3 <- (topTab_GSE33470CD4DPCD3_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_GSE33470CD4DPCD3mas <- (topTab_GSE33470CD4DPCD3mas_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD4DPCD3mas <- (topTab_GSE33470CD4DPCD3mas_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_GSE33470CD4DPCD3menos <- (topTab_GSE33470CD4DPCD3menos_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470CD4DPCD3menos <- (topTab_GSE33470CD4DPCD3menos_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [25] "topTab_GSE33470CD4DPCD3mas_Anot"            "topTab_GSE33470CD4DPCD3menos_Anot"         
+# [27] "topTab_GSE33470DPCD3_Anot"
+
+selGenes_GSE33470DPCD3 <- (topTab_GSE33470DPCD3_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_GSE33470DPCD3 <- (topTab_GSE33470DPCD3_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+```
+
+```{r, warning=TRUE, error=FALSE, echo=FALSE, error=TRUE}
+library(illuminaHumanv4.db)
+
+par(mfrow=c(1,2))
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD34CD4, universe = geneUniverse_GSE33470CD34CD4, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='(CD34+CD1a-  +  CD34+CD1a+) - CD4ISP')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD34masmasDPCD3menos, universe = geneUniverse_GSE33470CD34masmasDPCD3menos, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD34+CD1a+ - DPCD3-')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD3CD34, universe = geneUniverse_GSE33470CD3CD34, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='(CD3+CD4+  +  CD3+CD8+) - (CD34+CD1a-  +  CD34+CD1a+)')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD3CD4, universe = geneUniverse_GSE33470CD3CD4, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='(CD3+CD4+  +  CD3+CD8+) - CD4ISP')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD3DPCD3, universe = geneUniverse_GSE33470CD3DPCD3, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='(CD3+CD4+  +  CD3+CD8+) - (DPCD3-  +  DPCD3+)')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD34DPCD3, universe = geneUniverse_GSE33470CD34DPCD3, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='(CD34+CD1a-  +  CD34+CD1a+) - (DPCD3-  +  DPCD3+)')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD4DPCD3, universe = geneUniverse_GSE33470CD4DPCD3, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD4ISP - (DPCD3_menos  +  DPCD3_mas)')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD34DPCD3, universe = geneUniverse_GSE33470CD34DPCD3, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='(CD34+CD1a-  +  CD34+CD1a+) - (DPCD3-  +  DPCD3+)')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD34masmasCD4, universe = geneUniverse_GSE33470CD34masmasCD4, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD34+CD1a+ - CD4ISP')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD34masmenosCD4, universe = geneUniverse_GSE33470CD34masmenosCD4, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD34+CD1a- - CD4ISP')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD3DPCD3, universe = geneUniverse_GSE33470CD3DPCD3, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='(CD3+CD4+  +  CD3+CD8+) - (DPCD3-  +  DPCD3+)')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD3masCD4CD34masmeno, universe = geneUniverse_GSE33470CD3masCD4CD34masmeno, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD3+CD4+ - CD34+CD1a-')
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD3masCD4CD4, universe = geneUniverse_GSE33470CD3masCD4CD4, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD3+CD4+ - CD4ISP')
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD3masCD4DPCD3menos, universe = geneUniverse_GSE33470CD3masCD4DPCD3menos, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD3+CD4+ - DPCD3-')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD3masCD8CD4, universe = geneUniverse_GSE33470CD3masCD8CD4, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD3+CD8+ - CD4ISP')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD4DPCD3mas, universe = geneUniverse_GSE33470CD4DPCD3mas, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD4ISP - DPCD3+')
+
+
+
+ego1 = enrichGO(gene = selGenes_GSE33470CD4DPCD3menos, universe = geneUniverse_GSE33470CD4DPCD3menos, keyType = "ENTREZID", OrgDb = illuminaHumanv4.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CD4ISP - DPCD3-')
+
+par(mfrow=c(1,1))
+```
+
+
+
+
+# GSE37389
+
+En los resultados de la selección de genes, en la parte de los decideTests, vimos que no había genes diferencialmente expresados. Teníamos:
+
+GSE37389_res
+   0 
+9403 
+
+gruposTCR
+Down           0
+NotSig      9403
+Up             0
+
+
+## Volcano plot
+
+Comparación (TCR alfa-beta) - (TCR gamma-delta):
+
+![Volcano plot GSE37389](GSE37389/volcano_2.png)
+
+No generaremos un heatmap, ya que lo hemos hecho hasta ahora con los genes que se expresaban diferencialmente, y no existen para este caso.
+
+Tampoco se puede generar un gráfico de enriquecimiento de tipo dotplot.
+
+
+
+
+
+# GSE56488
+
+
+Tampoco tenemos genes diferencialmente expresados. Críamos que era porque los grupos no se diferencian entre sí significativamente, ya que tienen que ver con grupos de injertos, y no con algo referente al tipo o etapa de la enfermedad.
+
+No podemos realizar el gráfico heatmap al no haber seleccionado genes diferencialmente expresados entre grupos, ni el gráfico posterior dotplot.
+
+## Volcano plot
+
+Comparación entre cinética de injerto corta y larga:
+
+![Volcano plot GSE56488](GSE56488/volcano_2.png)
+
+
+
+# GSE62156
+
+## Volcano plot
+
+Comparación CALM AF10 - HOX:
+
+![Volcano plot GSE62156](GSE62156/volcano_2.jpg)
+
+
+
+
+## Heatmap
+
+![Heatmap GSE62156](GSE62156/heatmap_2.jpg)
+
+
+
+
+
+## Dotplot
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE62156/GSE62156topTab_Anot.Rda')
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+ls()
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+
+# load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE28703/GSE28703topTabs_Anot.RData') 
+library(clusterProfiler)
+library(dplyr)
+
+selGenes_1 <- (topTab_GSE62156_1_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_1 <- (topTab_GSE62156_1_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_2 <- (topTab_GSE62156_2_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_2 <- (topTab_GSE62156_2_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_3 <- (topTab_GSE62156_3_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_3 <- (topTab_GSE62156_3_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+# [1] "topTab_GSE62156_1_Anot"  "topTab_GSE62156_10_Anot" "topTab_GSE62156_11_Anot" "topTab_GSE62156_12_Anot"
+#  [5] "topTab_GSE62156_13_Anot" "topTab_GSE62156_14_Anot" "topTab_GSE62156_15_Anot" "topTab_GSE62156_16_Anot"
+#  [9] "topTab_GSE62156_17_Anot" "topTab_GSE62156_18_Anot" "topTab_GSE62156_19_Anot" "topTab_GSE62156_2_Anot" 
+# [13] "topTab_GSE62156_20_Anot" "topTab_GSE62156_21_Anot" "topTab_GSE62156_22_Anot" "topTab_GSE62156_23_Anot"
+# [17] "topTab_GSE62156_24_Anot" "topTab_GSE62156_25_Anot" "topTab_GSE62156_26_Anot" "topTab_GSE62156_27_Anot"
+# [21] "topTab_GSE62156_28_Anot" "topTab_GSE62156_29_Anot" "topTab_GSE62156_3_Anot"  "topTab_GSE62156_30_Anot"
+# [25] "topTab_GSE62156_31_Anot" "topTab_GSE62156_32_Anot" "topTab_GSE62156_33_Anot" "topTab_GSE62156_34_Anot"
+# [29] "topTab_GSE62156_35_Anot" "topTab_GSE62156_36_Anot" "topTab_GSE62156_37_Anot" "topTab_GSE62156_38_Anot"
+# [33] "topTab_GSE62156_39_Anot" "topTab_GSE62156_4_Anot"  "topTab_GSE62156_40_Anot" "topTab_GSE62156_41_Anot"
+# [37] "topTab_GSE62156_42_Anot" "topTab_GSE62156_43_Anot" "topTab_GSE62156_44_Anot" "topTab_GSE62156_45_Anot"
+# [41] "topTab_GSE62156_46_Anot" "topTab_GSE62156_47_Anot" "topTab_GSE62156_48_Anot" "topTab_GSE62156_5_Anot" 
+# [45] "topTab_GSE62156_6_Anot"  "topTab_GSE62156_7_Anot"  "topTab_GSE62156_8_Anot"  "topTab_GSE62156_9_Anot" 
+
+
+
+
+selGenes_4 <- (topTab_GSE62156_4_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_4 <- (topTab_GSE62156_4_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_5 <- (topTab_GSE62156_5_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_5 <- (topTab_GSE62156_5_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_6 <- (topTab_GSE62156_6_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_6 <- (topTab_GSE62156_6_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_7 <- (topTab_GSE62156_7_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_7 <- (topTab_GSE62156_7_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_8 <- (topTab_GSE62156_8_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_8 <- (topTab_GSE62156_8_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_9 <- (topTab_GSE62156_9_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_9 <- (topTab_GSE62156_9_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_10 <- (topTab_GSE62156_10_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_10 <- (topTab_GSE62156_10_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_11 <- (topTab_GSE62156_11_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_11 <- (topTab_GSE62156_11_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_12 <- (topTab_GSE62156_12_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_12 <- (topTab_GSE62156_12_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_13 <- (topTab_GSE62156_13_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_13 <- (topTab_GSE62156_13_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_14 <- (topTab_GSE62156_14_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_14 <- (topTab_GSE62156_14_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_15 <- (topTab_GSE62156_15_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_15 <- (topTab_GSE62156_15_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_16 <- (topTab_GSE62156_16_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_16 <- (topTab_GSE62156_16_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_17 <- (topTab_GSE62156_17_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_17 <- (topTab_GSE62156_17_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_18 <- (topTab_GSE62156_18_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_18 <- (topTab_GSE62156_18_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_19 <- (topTab_GSE62156_19_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_19 <- (topTab_GSE62156_19_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_20 <- (topTab_GSE62156_20_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_20 <- (topTab_GSE62156_20_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_21 <- (topTab_GSE62156_21_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_21 <- (topTab_GSE62156_21_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_22 <- (topTab_GSE62156_22_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_22 <- (topTab_GSE62156_22_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_23 <- (topTab_GSE62156_23_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_23 <- (topTab_GSE62156_23_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_24 <- (topTab_GSE62156_24_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_24 <- (topTab_GSE62156_24_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_25 <- (topTab_GSE62156_25_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_25 <- (topTab_GSE62156_25_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_26 <- (topTab_GSE62156_26_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_26 <- (topTab_GSE62156_26_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_27 <- (topTab_GSE62156_27_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_27 <- (topTab_GSE62156_27_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_28 <- (topTab_GSE62156_28_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_28 <- (topTab_GSE62156_28_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_29 <- (topTab_GSE62156_29_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_29 <- (topTab_GSE62156_29_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_30 <- (topTab_GSE62156_30_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_30 <- (topTab_GSE62156_30_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_31 <- (topTab_GSE62156_31_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_31 <- (topTab_GSE62156_31_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_32 <- (topTab_GSE62156_32_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_32 <- (topTab_GSE62156_32_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+selGenes_33 <- (topTab_GSE62156_33_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_33 <- (topTab_GSE62156_33_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_34 <- (topTab_GSE62156_34_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_34 <- (topTab_GSE62156_34_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_35 <- (topTab_GSE62156_35_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_35 <- (topTab_GSE62156_35_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_36 <- (topTab_GSE62156_36_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_36 <- (topTab_GSE62156_36_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_37 <- (topTab_GSE62156_37_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_37 <- (topTab_GSE62156_37_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_38 <- (topTab_GSE62156_38_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_38 <- (topTab_GSE62156_38_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_39 <- (topTab_GSE62156_39_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_39 <- (topTab_GSE62156_39_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+selGenes_40 <- (topTab_GSE62156_40_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_40 <- (topTab_GSE62156_40_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_41 <- (topTab_GSE62156_41_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_41 <- (topTab_GSE62156_41_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_42 <- (topTab_GSE62156_42_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_42 <- (topTab_GSE62156_42_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+selGenes_43 <- (topTab_GSE62156_43_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_43 <- (topTab_GSE62156_43_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_44 <- (topTab_GSE62156_44_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_44 <- (topTab_GSE62156_44_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_45 <- (topTab_GSE62156_45_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_45 <- (topTab_GSE62156_45_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_46 <- (topTab_GSE62156_46_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_46 <- (topTab_GSE62156_46_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_47 <- (topTab_GSE62156_47_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_47 <- (topTab_GSE62156_47_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+selGenes_48 <- (topTab_GSE62156_48_Anot%>%
+                                   subset(adj.P.Val < 0.05) %>%
+                                   dplyr::select(ENTREZID) %>%
+                                   unique)[, 1]
+
+geneUniverse_48 <- (topTab_GSE62156_48_Anot %>%
+                              dplyr::select(ENTREZID) %>%
+                              unique)[, 1]
+
+
+
+```
+
+
+```{r, warning=FALSE, echo=FALSE, error=TRUE}
+
+
+library(hgu133plus2.db)
+
+par(mfrow=c(1,2))
+
+
+ego1 = enrichGO(gene = selGenes_6, universe = geneUniverse_6, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_7, universe = geneUniverse_7, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TLX1')
+
+
+ego1 = enrichGO(gene = selGenes_8, universe = geneUniverse_8, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TLX3')
+
+
+ego1 = enrichGO(gene = selGenes_9, universe = geneUniverse_9, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX - HOXA of Unknown Mechanism')
+
+
+ego1 = enrichGO(gene = selGenes_13, universe = geneUniverse_13, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_14, universe = geneUniverse_14, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX - TLX1')
+
+
+ego1 = enrichGO(gene = selGenes_15, universe = geneUniverse_15, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='HOX - TLX3')
+
+
+ego1 = enrichGO(gene = selGenes_16, universe = geneUniverse_16, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_18, universe = geneUniverse_18, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_19, universe = geneUniverse_19, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='hola')
+
+ego1 = enrichGO(gene = selGenes_20, universe = geneUniverse_20, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+
+ego1 = enrichGO(gene = selGenes_23, universe = geneUniverse_23, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_24, universe = geneUniverse_24, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_25, universe = geneUniverse_25, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_28, universe = geneUniverse_28, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+
+ego1 = enrichGO(gene = selGenes_30, universe = geneUniverse_30, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+ego1 = enrichGO(gene = selGenes_31, universe = geneUniverse_31, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+ego1 = enrichGO(gene = selGenes_32, universe = geneUniverse_32, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+ego1 = enrichGO(gene = selGenes_38, universe = geneUniverse_38, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_40, universe = geneUniverse_40, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_41, universe = geneUniverse_41, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+ego1 = enrichGO(gene = selGenes_42, universe = geneUniverse_42, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_44, universe = geneUniverse_44, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+ego1 = enrichGO(gene = selGenes_46, universe = geneUniverse_46, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+ego1 = enrichGO(gene = selGenes_47, universe = geneUniverse_47, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+
+
+ego1 = enrichGO(gene = selGenes_48, universe = geneUniverse_48, keyType = "ENTREZID", OrgDb = hgu133plus2.db,
+    ont = "BP", pAdjustMethod = "BH", pvalueCutoff = 0.05, qvalueCutoff = 0.05, readable = TRUE)
+
+dotplot(ego1, title='CALM_AF10 - TAL_R')
+
+par(mfrow=c(1,1))
+
+```
+
+
+
+
+
+# GSE110633
+
+```{r, warning=TRUE, error=FALSE, echo=FALSE}
+load('C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE110633/GSE110633_Toptabs&Universe.Rda')
+```
+
+## Volcano plot
+
+Comparación HOXA - IMM:
+
+![Volcano plot GSE110633](GSE110633/volcano_2.jpg)
+
+
+
+
+## Heatmap
+
+![Heatmap GSE110633](GSE110633/heatmaps.png)
+
+
+
+
+
+## Dotplot
+
+
+Realizado en el documento "Expres diferenc y sugnif.Rdm". Segundo apartado referente a GSE110633, y dentro en "Anotación de resultados y análisis de significación biológica".
+
+De la relación entre grupos HOXA y TAL:
+
+![Dotplot GSE110633_HOXA_TAL](GSE110633/dotplot_HOXA_TAL_2.png)
+
+De la relación entre grupos IMM y TAL:
+
+![Dotplot GSE110633_IMM_TAL](GSE110633/dotplot_IMM_TAL_2.png)
+
+De la relación entre grupos TAL y TLX:
+
+
+![Dotplot GSE110633_TAL_TLX](GSE110633/dotplot_TAL_TLX_2.png)
+
+
+
+
+# GSE110636
+
+## Volcano plot
+
+Comparación HOXA - IMM:
+
+![Volcano plot GSE110636](GSE110636/volcanos.jpg)
+
+
+
+
+## Heatmap
+
+![Heatmap GSE110636](GSE110636/heatmaps.png)
+
+
+
+
+
+
+## Dotplots
+Realizado en el documento "Expres diferenc y sugnif.Rdm". Segundo apartado referente a GSE110636, y dentro en "Anotación de resultados y análisis de significación biológica".
+
+De la relación entre grupos HOXA y TAL:
+
+![Dotplot GSE110636_HOXA_TAL](GSE110636/dotplot_HOXA_TAL_2.png)
+
+De la relación entre grupos HOXA y TLX:
+
+![Dotplot GSE110636_HOXA_TLX](GSE110636/dotplot_HOXA_TLX_2.png)
+
+
+De la relación entre grupos IMM y TAL:
+
+![Dotplot GSE110636_IMM_TAL](GSE110636/dotplot_IMM_TAL_2.png)
+
+De la relación entre grupos IMM y TLX:
+
+![Dotplot GSE110636_IMM_TLX](GSE110636/dotplot_IMM_TLX_2.png)
+
+De la relación entre grupos TAL y TLX:
+
+
+![Dotplot GSE110636_TAL_TLX](GSE110636/dotplot_TAL_TLX_2.png)
+
+
+
+

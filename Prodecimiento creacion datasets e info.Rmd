@@ -868,7 +868,7 @@ datadir <- "C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datas
 
 
 ```{r, message=FALSE, echo=TRUE, error=TRUE}
-
+library(GEOquery)
 GSE62156_getGEO <- getGEO("GSE62156", GSEMatrix =TRUE, AnnotGPL=TRUE,destdir = "datasets/GSE62156/" )
 ```
 
@@ -887,6 +887,9 @@ filelist<-list.files(pattern = ".CEL$")
 ## Unificar el procesamiento de archivos CEL
 
 ```{r, message=FALSE, echo=TRUE}
+library(affy)
+library(annotate)
+library(annaffy)
 
 setwd("C:/Users/Copito/OneDrive/Documentos/Master bioinf y bioest/TFM/datasets/GSE62156/")
 
@@ -4357,23 +4360,29 @@ save(GSE56488_Filtered, eset_GSE56488_Filtered,
 
 ## Filtraje
 
+
+
 ```{r, message=FALSE, echo=TRUE}
 
-show(annotation(GSE62156_Filtered))
+GSE62156_eset_rma <- rma(GSE62156_rawData)
+```
+
+```{r, message=FALSE, echo=TRUE}
+show(annotation(GSE62156_eset_rma))
 ```
 
 
 
 ```{r, message=FALSE, echo=TRUE}
 require(hgu133plus2.db)
-annotation(GSE62156_Filtered) <- "hgu133plus2.db"
+annotation(GSE62156_eset_rma) <- "hgu133plus2.db"
 ```
 
 
 
 ```{r, message=FALSE, echo=TRUE}
 library(genefilter)
-GSE62156_Filtered <- nsFilter(GSE62156_Filtered,
+GSE62156_Filtered <- nsFilter(GSE62156_eset_rma,
                               require.entrez =
                                 TRUE,
                      remove.dupEntrez = TRUE,
