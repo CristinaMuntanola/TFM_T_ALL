@@ -13,5 +13,5 @@ Este repositorio sirve como anexo a la memoria presentada de Cristina Muntañola
 
 -Figuras
 
-Si cambiamos de esta rama principal a *datasets*, podemos acceder a nuestros resultados. Para entender de dónde procede cada resultado, ver la figura 1 del archivo TFM
+Si cambiamos de esta rama principal a *datasets*, podemos acceder a nuestros resultados. Para acceder a otra rama, pinchar en branches, y luego en datasets. Para entender de dónde procede cada resultado, ver la figura 1 del archivo TFM
 
