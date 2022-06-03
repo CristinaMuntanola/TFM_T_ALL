@@ -13,3 +13,5 @@ Este repositorio sirve como anexo a la memoria presentada de Cristina Muntañola
 
 -Figuras
 
+Si cambiamos de esta rama principal a *datasets*, podemos acceder a nuestros resultados. Para entender de dónde procede cada resultado, ver la figura 1 del archivo TFM
+
