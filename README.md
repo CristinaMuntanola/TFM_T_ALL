@@ -20,7 +20,7 @@ Los archivos que se añaden son:
 
 ## Datasets
 
-Aquí se encuentran las tablas resultado de nuestros análisis. En el TFM, Figura 1, se puede consultar el origen de cada tipo de tabla. Además, se encuentra un PDF sobre un análisis de la calidad de las muestras.
+Aquí se encuentran las tablas resultado de nuestros análisis. En el TFM, Figura 1, se puede consultar el origen de cada tipo de tabla. Además, se encuentra un PDF sobre un análisis de la calidad de las muestras, llamado arrayQualityMetrics.
 
 
 Podemos acceder a nuestros resultados dentro de cada carpeta creada, para cada tipo de serie GSE (no se incluyen los datos crudos, descargados de la web de GEO). 
